@@ -14,9 +14,11 @@ public class NettyChannelMap {
     public static void add(String clientId,SocketChannel socketChannel){
         map.put(clientId,socketChannel);
     }
+
     public static Channel get(String clientId){
         return map.get(clientId);
     }
+
     public static void remove(SocketChannel socketChannel){
         for (Map.Entry entry:map.entrySet()){
             if (entry.getValue()==socketChannel){

@@ -1,0 +1,10 @@
+var ip='http://47.75.223.217';
+var uploadTempImg=ip+'/chat/uploadTempImg';
+var ajaxRooms=ip+'/chat/ajaxRooms';
+var uploadForeverImg=ip+'/chat/uploadForeverImg';
+var updateIconPort=ip+'/chat/updateIcon';
+var userInfoPort=ip+'/chat/userInfo';
+var ajaxReceiveRedBag=ip+'/chat/ajaxReceiveRedBag';
+var updatePassword=ip+'/chat/updatePassword';
+var logined=ip+'/chat/logined';
+var webSocketUrlPort=ip+'/chat/webSocketUrl';

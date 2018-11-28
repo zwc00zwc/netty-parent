@@ -1,0 +1,15 @@
+/*.iml
+/netty-server/*.iml
+/netty-common/*.iml
+/netty-client/*.iml
+/netty-chat/chat-console/target
+/netty-chat/chat-console/*.iml
+/netty-chat/chat-core/target
+/netty-chat/chat-core/*.iml
+/netty-chat/chat-server/target
+/netty-chat/chat-server/*.iml
+/netty-chat/chat-web/target
+/netty-chat/chat-web/*.iml
+/netty-chat/*.iml
+/jetty-server/*.iml
+/.idea

@@ -1,6 +1,6 @@
 package chat.console.controller;
 
-import com.shuangying.console.common.UserInfo;
+import chat.console.common.UserInfo;
 import com.shuangying.core.common.domain.Constants;
 import com.shuangying.core.common.utility.Md5Manager;
 import org.springframework.beans.factory.annotation.Autowired;

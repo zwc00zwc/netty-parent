@@ -114,6 +114,7 @@
                 <excludes>
                     <exclude>development/**</exclude>
                     <exclude>production/**</exclude>
+                    <exclude>test/**</exclude>
                 </excludes>
             </resource>
             <resource>

@@ -119,6 +119,7 @@
                 <excludes>
                     <exclude>development/**</exclude>
                     <exclude>production/**</exclude>
+                    <exclude>test/**</exclude>
                 </excludes>
             </resource>
             <resource>
@@ -144,6 +145,13 @@
             <id>production</id>
             <properties>
                 <profiles.active>production</profiles.active>
+            </properties>
+        </profile>
+        <profile>
+            <!-- 测试环境 -->
+            <id>test</id>
+            <properties>
+                <profiles.active>test</profiles.active>
             </properties>
         </profile>
     </profiles>

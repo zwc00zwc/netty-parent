@@ -23,10 +23,12 @@ function userTableList() {
             {
                 'mDataProp': 'userName',
                 'bSortable': false
-            }, {
-                'mDataProp': 'password',
-                'bSortable': false,
-            }, {
+            }
+            // , {
+            //     'mDataProp': 'password',
+            //     'bSortable': false,
+            // }
+            , {
                 'mDataProp': 'loginIp',
                 'bSortable': false,
             }, {
@@ -77,10 +79,10 @@ function getAllOperation(row) {
     var edit = '<input id="edit" data-id="' + row.id + '" class="btn btn-secondary radius" type="button" value="修改">';
     var join = '<input id="join" data-id="' + row.id + '" class="btn btn-default radius" type="button" value="拉入聊天室">';
     var unjoin = '<input id="unjoin" data-id="' + row.id + '" class="btn btn-warning radius" type="button" value="踢出聊天室">';
-    var addBlackip = '<input id="addBlackip" data-ip="' + row.ip + '" class="btn btn-danger radius" type="button" value="加入ip黑名单">';
+    var addBlackip = '<input id="addBlackip" data-ip="' + row.loginIp + '" class="btn btn-danger radius" type="button" value="加入ip黑名单">';
     var joinroom = '<input id="joinroom" data-id="' + row.id + '" class="btn btn-default radius" type="button" value="加入房间">';
-    var updatePassword = '<input id="joinroom" data-id="' + row.id + '" class="btn btn-warning radius" type="button" value="重置密码">';
-    var updateRole = '<input id="joinroom" data-id="' + row.id + '" class="btn btn-warning radius" type="button" value="修改角色">';
+    var updatePassword = '<input id="updatePassword" data-id="' + row.id + '" class="btn btn-warning radius" type="button" value="重置密码">';
+    var updateRole = '<input id="updateRole" data-id="' + row.id + '" class="btn btn-warning radius" type="button" value="修改角色">';
     var remove = '<input id="remove" data-id="' + row.id + '" class="btn btn-danger radius" type="button" value="删除">';
     if ($.inArray("sys:addUser", permUrls) > 0) {
         btn += edit;

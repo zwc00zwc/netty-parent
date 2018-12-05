@@ -10,17 +10,6 @@
                 </div>
             </div>
             <div class="row cl">
-                <label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>用户头像(默认随机头像)：</label>
-                <div class="formControls col-xs-8 col-sm-9">
-                    <span class="btn-upload form-group">
-                        <a href="javascript:void();" class="btn btn-primary radius upload-btn"><i class="Hui-iconfont"></i> 上传图片</a>
-                        <input id="iconUpload" type="file" class="input-file valid" name="fileupload" data-url="/upload" multiple="">
-                    </span>
-                    <input type="hidden" name="icon" id="icon" value="${user.icon!''}" style="width:200px">
-                    <img id="iconUploadSrc" src="${user.icon!''}" />
-                </div>
-            </div>
-            <div class="row cl">
                 <label class="form-label col-xs-4 col-sm-3">房间：</label>
                 <div class="formControls col-xs-8 col-sm-9">
                 <span class="select-box">

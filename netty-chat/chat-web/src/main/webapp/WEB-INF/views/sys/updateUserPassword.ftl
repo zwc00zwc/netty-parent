@@ -2,11 +2,11 @@
 <@layout.layout>
     <article class="page-container">
         <form action="" method="post" class="form form-horizontal" id="form-password-add">
-            <input type="hidden" value="${user.id!''}" id="id" name="id">
+            <input type="hidden" value="${id!''}" id="id" name="id">
             <div class="row cl">
                 <label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>密码：</label>
                 <div class="formControls col-xs-8 col-sm-9">
-                    <input type="password" class="input-text valid" autocomplete="off" value="${user.password!''}" placeholder="密码" id="Password" name="Password">
+                    <input type="password" class="input-text valid" autocomplete="off" value="" placeholder="密码" id="Password" name="Password">
                 </div>
             </div>
             <div class="row cl">

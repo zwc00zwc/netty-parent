@@ -173,8 +173,43 @@ th {
 @media (min-width: 640px){html{font-size: 85.3333px;} }
 @media (min-width: 750px){html{font-size: 100px;} }
 
+/*图片放大*/
+.big_img{position: fixed;z-index: -1;opacity: 0;background: rgba(255,255,255,0.9);width: 100%;height: 100%;top:0;left:0;}
+.big_img .swiper-container2 {position: relative;width: 100%;height: 100%;}
+.big_img .swiper-container2  .swiper-wrapper{width: 100%;height: 100%;}
+.big_img .swiper-slide{width: 100%;height: 100%;display: table}
+.big_img .swiper-slide .cell{width: 100%;;height: 100%;display: table-cell;vertical-align: middle;text-align: center;}
+.big_img .swiper-slide img{max-width: 90%;max-height: 80%;margin:0 auto;}
+.big_img .swiper-pagination2{position: absolute; top:0.2rem;text-align: center;width: 100%;}
+.big_img .swiper-pagination2 span{margin:0 0.05rem;}
+/*图片放大结束*/			
 
 
+
+.iframeBox{
+	webkit-overflow-scrolling: touch;
+	overflow-y: scroll;
+	width: 100%;
+	height: auto;
+	position: fixed;
+	z-index:9999;
+	top: 1.68rem;
+	bottom: 0;
+	background:#fff;
+	display: none;
+	padding: 0;
+}
+.scroll-wrapper {
+}
+
+.scroll-wrapper-ios {
+	-webkit-overflow-scrolling: touch;
+	overflow-y: scroll;
+}
+
+.scroll-wrapper iframe {
+	height: 100%;
+}
 .clearfix:after {
 	content: ' ';
 	display: block;
@@ -338,14 +373,13 @@ nav{
 	z-index: 999;
 }
 .navlist{
-	padding: ;
 	height:0.8rem;
 	background: #c8a762;
-	padding: 0.1rem 0.2rem 0 0.2rem;
+	padding: 0.1rem 0 0 0;
 }
 .navlist li a{
 	display: block;
-	width: 1.2rem;
+	width: 2rem;
 	text-align: center;
 	font-size: 0.36rem;
 	color: #fff;
@@ -380,6 +414,7 @@ nav{
 	padding:0 0.4rem ;
 	font-size: 0.22rem;
 	color: #fff;
+	min-width: 7.5rem;
 }
 .pad_right a{
 	color: #fff;
@@ -395,12 +430,12 @@ nav{
 	position: fixed;
 	right: 0;
 	top: 2.1rem;
-	width:1.3rem ;
-	background:url(../images/people.png) #D2D2D2 0.2rem center no-repeat;
+	background:url(/resources/chat/m/images/people.png) #D2D2D2 0.2rem center no-repeat;
 	background-size: 0.22rem 0.2rem;
 	font-size: 0.2rem;
 	color:#4e4d4d;
 	padding-left: 0.45rem;
+	padding-right: 0.2rem;
 	border-radius:10px ;
 	z-index: 10;
 }
@@ -548,6 +583,8 @@ nav{
 	width: 0.94rem;
 	height: 0.93rem;
 	margin-top: 0.22rem;
+	overflow:hidden;
+	border-radius: 50%;
 }
 .redPackBox{
 	display: none;
@@ -576,7 +613,6 @@ nav{
 	position: fixed;
 	width: 100%;
 	top: 1.97rem;
-	bottom: 0rem;
 	padding: 0.2rem;
 	overflow: auto;
 	bottom:0.9rem;
@@ -630,28 +666,35 @@ nav{
 	 	line-height: 0.42rem;
  		font-size: 0.3rem;
  		background: #fff;
-	 	padding:0.1rem  0.15rem 0.1rem 0.2rem;
 	 	border-radius: 0.1rem;
 	 	display: inline-block;
 	 	word-break: break-all;
+	  	text-align: left;
   }
-  .textcontent img{
+  .textcontent .faceImg{
   	width:0.38rem ;
   	height: 0.36rem;
   	vertical-align: middle;
-  	margin:-0.02rem 0.02rem 0 0.02rem;
+  	margin:-0.02rem 0.04rem 0 0.04rem;
   }
   .leftRecieve,.rightRecieve{
   	overflow: hidden;
   }
  .leftRecieve .textcontent{
- 	float: left;
  	margin-left: 1rem;
+ 	padding:0.1rem  0.15rem 0.1rem 0.2rem;
  }
   .rightRecieve .textcontent{
-  	float: right;
  	margin-right: 1rem;
+ 	padding:0.1rem  0.2rem 0.1rem 0.15rem;
  }
+ .rightRecieve .reciever{
+ 	text-align: right;
+ }
+.rightRecieve .content{
+	text-align: right;
+	display: inline-block;
+}
 .leftAvatar,.rightAvatar{
 	position: absolute;
 	width: 0.8rem;
@@ -788,19 +831,26 @@ nav{
 	width: 0.6rem;
 	height: 0.6rem;
 }
+.editbox{
+	padding: 0.08rem 0;
+	width: 5.4rem;
+	height: 0.54rem;
+	-webkit-user-select:text;
+	line-height: 0.4rem;
+	padding-right:0.35rem ;
+	padding-bottom: 0.08rem;
 
+}
 .oprate input,.oprate>div{
-	padding:0 0.1rem;
+	padding:0.02rem 0.1rem;
 	width: 5.22rem;
-	min-height: 0.58rem;
-	height: auto;
+	min-height: 0.62rem;
+	height: 0.62rem;
 	border-radius: 5px;
 	border: 1px solid #c0c0c0;
 	margin-bottom: 0;
 	font-size: 0.26rem;
-	line-height: 0.58rem;
-	-webkit-user-select:text;
-	 vertical-align:bottom;
+	overflow-x: hidden;
 }
 .oprate input{
 	position: absolute;
@@ -810,11 +860,10 @@ nav{
 }
 .oprate>div{
 	position: relative;
-	height: 0.58rem;
 }
 .oprate div img{
-	width: 0.38rem;
-	height: 0.36rem;
+	width: 0.3rem;
+	height: 0.28rem;
 	vertical-align: middle;
 	margin: -0.02rem 0.02rem 0     ;
 }
@@ -828,6 +877,7 @@ nav{
 	color: rgba(200,167,98,1);;
 	padding:0 0.1rem;
 	z-index: 12;
+    line-height: 0.58rem;
 }
 .oprateBox{
 	display: none;
@@ -875,7 +925,7 @@ textarea img{
 	left: 0;
 	width: 100%;
 	padding: 0 0.2rem;
-	z-index:13;
+	z-index:11;
 }
 .joinList{
 	-webkit-animation: fadeinmove 0.25s 1 0s linear forwards;
@@ -963,6 +1013,45 @@ textarea img{
 .redPack .rightTriangle{
 	border-color: transparent  transparent  transparent #F17E02;
 }
+.mui-scroll-wrapper {
+    top: 1.98rem !important;
+}
+.forbidden{
+	font-size: 0.26rem;
+	text-align: center;
+	line-height:0.4rem ;
+	color: rgba(200,167,98,1);
+
+}
+.revert{
+    font-size: 0.26rem;
+    text-align: center;
+    line-height:0.4rem ;
+    color: rgba(200,167,98,1);
+}
+.inferBox{
+	position: fixed;
+	left:0 ;
+	width: 100%;
+	top: 2.2rem;
+	text-align: center;
+	z-index:9;
+	display: none;
+}
+.infer{
+	padding: 0 0.3rem;
+	font-size: 0.26rem;
+	text-align: center;
+	line-height:0.4rem ;
+	background:rgba(180,180,180,.5);
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+
+}
+.infer span{
+	color: rgba(200,167,98,1);
+}
 .shareList{
 	display: none;
 	padding: 0.2rem 0.3rem;
@@ -1015,6 +1104,7 @@ textarea img{
 	height: 5.59rem;;
 	background: url(/resources/chat/m/images/reword.png);
 	background-size: 100% 100%;
+	z-index:15;
 }
 .rewordText{
 	width: 5.13rem;
@@ -1030,13 +1120,26 @@ textarea img{
 	padding: 0.2rem 0;
 }
 .textcontent img.uploadImg{
-	max-width:100%;
+	max-width:2.5rem;
 	width: auto;
 	height: auto;
 	
 }
-.content.uploadImgContent{
-	max-width: 50%;
+
+.newMessage{
+	position: fixed;
+	right:0.2rem;
+	bottom: 1.2rem;
+	width: 0.46rem;
+	height: 0.62rem;
+	background: url(/resources/chat/m/images/new.png);
+	background-size: 100% 100%;
+	text-align: center;
+	color:#fff;
+	font-size: 0.22rem;
+	line-height: 0.5rem;
+	display: none;
+	z-index: 3;
 }
   /*登录页*/
  .login, .login body{
@@ -1214,6 +1317,7 @@ input[type=submit]{
  	text-align: center;
  	color: #fff;
  	font-size: 0.24rem;
+     z-index: 3;
  }
  .myPack footer span{
  	color: #fff;
@@ -1252,6 +1356,9 @@ input[type=submit]{
 }
 .packList li div.status2{
 	color:  #C30D23 ;
+}
+.isPack{
+    display: none;
 }
 
 /*.packId{
@@ -1537,7 +1644,7 @@ input[type=submit].passBtn{
 	background-position:-1.57rem -3rem;
 }
 .photoList .userIcon11{
-	background: url(../images/avatarImg.png);
+	background: url(/resources/chat/m/images/avatarImg.png);
 	background-size:6rem auto;
 	background-position:-3.2rem -3rem;
 }
@@ -1650,7 +1757,7 @@ input[type=file]{
 	height: 100%;
 	left: 0;
 	top: 0;
-	z-index: 1000;
+	z-index: 300000;
 	display: none;
 }
 input:-webkit-autofill {
@@ -1660,4 +1767,60 @@ color: #000;
 }
 input:-webkit-autofill{
 -webkit-box-shadow: 0 0 0 1000px rgba(235,235,235,1) inset;  //使用足够大的纯色内阴影覆盖黄色背景
+}
+/*----------------mui.showLoading---------------*/
+.mui-show-loading {
+    position: fixed;
+    padding: 5px;
+    width: 120px;
+    min-height: 120px;
+    top: 45%;
+    left: 50%;
+    margin-left: -60px;
+    background: rgba(0, 0, 0, 0.6);
+    text-align: center;
+    border-radius: 5px;
+    color: #FFFFFF;
+    visibility: hidden;
+    margin: 0;
+    z-index: 20000;
+    display: none;
+
+    -webkit-transition-duration: .2s;
+    transition-duration: .2s;
+    opacity: 0;
+    -webkit-transform: scale(0.9) translate(-50%, -50%);
+    transform: scale(0.9) translate(-50%, -50%);
+    -webkit-transform-origin: 0 0;
+    transform-origin: 0 0;
+}
+.mui-show-loading.loading-visible {
+    opacity: 1;
+    visibility: visible;
+    -webkit-transform: scale(1) translate(-50%, -50%);
+    transform: scale(1) translate(-50%, -50%);
+}
+.mui-show-loading .mui-spinner{
+    margin-top: 24px;
+    width: 36px;
+    height: 36px;
+}
+.mui-show-loading .text {
+    line-height: 1.6;
+    font-family: -apple-system-font,"Helvetica Neue",sans-serif;
+    font-size: 14px;
+    margin: 10px 0 0;
+    color: #fff;
+}
+
+.mui-show-loading-mask {
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+}
+.mui-show-loading-mask-hidden{
+    display: none !important;
 }

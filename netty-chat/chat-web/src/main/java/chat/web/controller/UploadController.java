@@ -1,6 +1,6 @@
 package chat.web.controller;
 
-import chat.web.auth.UserInfo;
+import chat.web.auth.SysAuth;
 import com.shuangying.core.common.domain.ResultDo;
 import com.shuangying.core.common.upload.AliyunOssManager;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public class UploadController extends BaseController {
     @Autowired
     private MultipartResolver multipartResolver;
 
-    @UserInfo
+    @SysAuth(rule = "")
     @ResponseBody
     @RequestMapping(value = "/upload",method = RequestMethod.POST)
     public ResultDo upload(HttpServletRequest req, HttpServletResponse resp){

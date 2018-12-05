@@ -123,7 +123,9 @@ public class SysController extends BaseController {
         try {
             if (RedisManager.existsObject(rediskey)){
                 List<MonitorOnlineDto> list = (List<MonitorOnlineDto>)RedisManager.getObject(rediskey);
-                resultDo.setList(list);
+                if (list!=null && list.size()>0){
+                    resultDo.setList(list);
+                }
                 return resultDo;
             }
         } catch (Exception e) {
@@ -171,13 +173,13 @@ public class SysController extends BaseController {
                 }
             }
         }
+        resultDo.setList(list);
         try {
             RedisManager.putObject(rediskey,list);
             RedisManager.expireObject(rediskey,30);
         } catch (Exception e) {
             logger.error("redis monitorOnline插入异常",e);
         }
-        resultDo.setList(list);
         return resultDo;
     }
 
@@ -200,7 +202,7 @@ public class SysController extends BaseController {
 //            resultDo.setErrorDesc("验证码不正确");
 //            return resultDo;
 //        }
-        resultDo = userManager.logined(domainConfig.getId(), username, password);
+        resultDo = userManager.logined(domainConfig.getId(), username, password,true);
         return resultDo;
     }
 
@@ -211,8 +213,8 @@ public class SysController extends BaseController {
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig();
         SysAuthUser sysAuthUser = getUserInfo();
-        User user = userManager.queryById(sysAuthUser.getUserId());
-        if (user == null || !domainConfig.getId().equals(user.getDomainId())){
+        User user = userManager.queryByDomainIdAndId(sysAuthUser.getUserId(),domainConfig.getId());
+        if (user == null){
             resultDo.setErrorDesc("数据问题");
             return resultDo;
         }
@@ -251,8 +253,8 @@ public class SysController extends BaseController {
         DomainConfig domainConfig = getDomainConfig();
         List<Role> roles = roleManager.queryList(domainConfig.getId());
         model.addAttribute("roles", roles);
-        User user = userManager.queryById(id);
-        if (user == null || domainConfig.getId()!=user.getDomainId()){
+        User user = userManager.queryByDomainIdAndId(id,domainConfig.getId());
+        if (user == null){
             user = new User();
         }
         model.addAttribute("user", user);
@@ -271,8 +273,8 @@ public class SysController extends BaseController {
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig();
         if (user.getId() != null && user.getId() > 0) {
-            User old = userManager.queryById(user.getId());
-            if (old == null || domainConfig.getId() != old.getDomainId()) {
+            User old = userManager.queryByDomainIdAndId(user.getId(),domainConfig.getId());
+            if (old == null) {
                 resultDo.setErrorDesc("数据不存在");
                 return resultDo;
             }
@@ -306,12 +308,13 @@ public class SysController extends BaseController {
     @RequestMapping(value = "/updateUserPassword")
     public String updateUserPassword(Model model,Long id){
         DomainConfig domainConfig = getDomainConfig();
+        model.addAttribute("id",id);
         return "/sys/updateUserPassword";
     }
 
     @SysAuth(rule = "sys:updateUserPassword")
     @RequestMapping(value = "/saveUserPassword")
-    public ResultDo saveUserPassword(Long id,String password){
+    public ResultDo saveUserPassword(Long id, String password){
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig();
         User user = userManager.queryByDomainIdAndId(id,domainConfig.getId());
@@ -330,8 +333,8 @@ public class SysController extends BaseController {
         DomainConfig domainConfig = getDomainConfig();
         List<Role> roles = roleManager.queryList(domainConfig.getId());
         model.addAttribute("roles", roles);
-        User user = userManager.queryById(id);
-        if (user == null || domainConfig.getId()!=user.getDomainId()){
+        User user = userManager.queryByDomainIdAndId(id,domainConfig.getId());
+        if (user == null){
             user = new User();
         }
         model.addAttribute("user", user);
@@ -340,7 +343,7 @@ public class SysController extends BaseController {
 
     @SysAuth(rule = "sys:updateUserRole")
     @RequestMapping(value = "/saveUserRole")
-    public ResultDo saveUserRole(Long id,Long roleId){
+    public ResultDo saveUserRole(Long id, Long roleId){
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig();
         User user = userManager.queryByDomainIdAndId(id,domainConfig.getId());
@@ -359,8 +362,8 @@ public class SysController extends BaseController {
     public ResultDo joinChat(Long id){
         DomainConfig domainConfig = getDomainConfig();
         ResultDo resultDo = new ResultDo();
-        User old = userManager.queryById(id);
-        if (old == null || domainConfig.getId() != old.getDomainId()) {
+        User old = userManager.queryByDomainIdAndId(id,domainConfig.getId());
+        if (old == null) {
             resultDo.setErrorDesc("数据不存在");
             return resultDo;
         }
@@ -375,8 +378,8 @@ public class SysController extends BaseController {
     public ResultDo unJoinChat(Long id){
         DomainConfig domainConfig = getDomainConfig();
         ResultDo resultDo = new ResultDo();
-        User old = userManager.queryById(id);
-        if (old == null || domainConfig.getId() != old.getDomainId()) {
+        User old = userManager.queryByDomainIdAndId(id,domainConfig.getId());
+        if (old == null) {
             resultDo.setErrorDesc("数据不存在");
             return resultDo;
         }
@@ -391,8 +394,8 @@ public class SysController extends BaseController {
     public ResultDo removeUser(Long id){
         DomainConfig domainConfig = getDomainConfig();
         ResultDo resultDo = new ResultDo();
-        User old = userManager.queryById(id);
-        if (old == null || domainConfig.getId() != old.getDomainId()) {
+        User old = userManager.queryByDomainIdAndId(id,domainConfig.getId());
+        if (old == null) {
             resultDo.setErrorDesc("数据不存在");
             return resultDo;
         }
@@ -422,8 +425,8 @@ public class SysController extends BaseController {
     @RequestMapping(value = "/addRole")
     public String addRole(Model model,Long id) {
         DomainConfig domainConfig = getDomainConfig();
-        Role role = roleManager.queryById(id);
-        if (role == null || domainConfig.getId() != role.getDomainId()){
+        Role role = roleManager.queryByIdAndDomainId(id,domainConfig.getId());
+        if (role == null){
             role = new Role();
         }
         List<Integer> idList = new ArrayList<>();
@@ -447,8 +450,8 @@ public class SysController extends BaseController {
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig();
         if (role.getId()!=null && role.getId()>0){
-            Role old = roleManager.queryById(role.getId());
-            if (old == null || domainConfig.getId() != old.getDomainId()){
+            Role old = roleManager.queryByIdAndDomainId(role.getId(),domainConfig.getId());
+            if (old == null){
                 resultDo.setErrorDesc("数据不存在");
                 return resultDo;
             }
@@ -542,22 +545,31 @@ public class SysController extends BaseController {
     public PageResult ajaxReceiveRedbag(ReceiveRedBagQuery query){
         DomainConfig domainConfig = getDomainConfig();
         query.setDomainId(domainConfig.getId());
+        query.setStartTime(DateUtils.addDate(new Date(),-3));
         PageResult<ReceiveRedbag> pageResult = receiveRedbagManager.queryPage(query);
         return pageResult;
     }
 
-    @ResponseBody
     @SysAuth(rule = "sys:exchangeRedbag")
     @RequestMapping(value = "/exchangeRedbag")
-    public ResultDo exchangeRedbag(Long receiveId){
+    public String exchangeRedbag(Model model,Long receiveId){
+        model.addAttribute("receiveId",receiveId);
+        return "/sys/exchangeRedbag";
+    }
+
+    @ResponseBody
+    @SysAuth(rule = "sys:exchangeRedbag")
+    @RequestMapping(value = "/postExchangeRedbag")
+    public ResultDo postExchangeRedbag(Long receiveId, String remark){
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig();
-        ReceiveRedbag receiveRedbag = receiveRedbagManager.queryById(receiveId);
-        if (receiveRedbag==null ||domainConfig.getId() != receiveRedbag.getDomainId()){
+        ReceiveRedbag receiveRedbag = receiveRedbagManager.queryByIdAndDomainId(receiveId,domainConfig.getId());
+        if (receiveRedbag==null){
             resultDo.setErrorDesc("数据不存在");
             return resultDo;
         }
-        receiveRedbag.setStatus(1);
+        receiveRedbag.setStatus(2);
+        receiveRedbag.setRemark(remark);
         resultDo.setSuccess(receiveRedbagManager.update(receiveRedbag));
         return resultDo;
     }
@@ -581,7 +593,7 @@ public class SysController extends BaseController {
     }
 
     @ResponseBody
-    @SysAuth(rule = "sys:addBlackIp")
+    @SysAuth(rule = "sys:addBlackip")
     @RequestMapping(value = "/saveBlackIp")
     public ResultDo saveBlackIp(BlackIp blackIp){
         ResultDo resultDo = new ResultDo();
@@ -604,8 +616,8 @@ public class SysController extends BaseController {
     public ResultDo ajaxBlackIp(Long id){
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig();
-        BlackIp blackIp = blackIpManager.queryById(id);
-        if (blackIp==null || domainConfig.getId() != blackIp.getDomainId()){
+        BlackIp blackIp = blackIpManager.queryByIdAndDomainId(id,domainConfig.getId());
+        if (blackIp==null){
             resultDo.setErrorDesc("数据不存在");
             return resultDo;
         }
@@ -635,8 +647,9 @@ public class SysController extends BaseController {
     @RequestMapping(value = "/addRoom")
     public String addRoom(Model model,Long id){
         DomainConfig domainConfig = getDomainConfig();
-        Room room = roomManager.queryById(id);
-        if (room == null || domainConfig.getId() != room.getDomainId()){
+        logger.error("id:"+id);
+        Room room = roomManager.queryByIdAndDomainId(id,domainConfig.getId());
+        if (room == null){
             room = new Room();
         }
         model.addAttribute("room", room);
@@ -648,10 +661,10 @@ public class SysController extends BaseController {
     @RequestMapping(value = "/saveRoom")
     public ResultDo saveRoom(Room room){
         ResultDo resultDo = new ResultDo();
+        DomainConfig domainConfig = getDomainConfig();
         if (room.getId() != null && room.getId() > 0) {
-            DomainConfig domainConfig = getDomainConfig();
-            Room old = roomManager.queryById(room.getId());
-            if (old == null || domainConfig.getId() != old.getDomainId()) {
+            Room old = roomManager.queryByIdAndDomainId(room.getId(),domainConfig.getId());
+            if (old == null) {
                 resultDo.setErrorDesc("数据不存在");
                 return resultDo;
             }
@@ -665,6 +678,7 @@ public class SysController extends BaseController {
             return resultDo;
         }
         Room insert = new Room();
+        insert.setDomainId(domainConfig.getId());
         insert.setRoomName(room.getRoomName());
         insert.setForbidStatus(0);
         insert.setOpenRoom(room.getOpenRoom());
@@ -683,8 +697,8 @@ public class SysController extends BaseController {
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig();
         SysAuthUser sysAuthUser = getUserInfo();
-        Room old = roomManager.queryById(id);
-        if (old == null || domainConfig.getId() != old.getDomainId()) {
+        Room old = roomManager.queryByIdAndDomainId(id,domainConfig.getId());
+        if (old == null) {
             resultDo.setErrorDesc("数据不存在");
             return resultDo;
         }
@@ -798,7 +812,7 @@ public class SysController extends BaseController {
     @ResponseBody
     @SysAuth(rule = "sys:webSite")
     @RequestMapping(value = "/saveWebSite")
-    public ResultDo saveWebSite(String web_name,String customer_url,String recharge_url,String web_url,String mobile_notice,String pc_logo,
+    public ResultDo saveWebSite(String web_name, String customer_url, String recharge_url, String web_url, String pc_notice, String mobile_notice, String pc_logo,
                                 String m_logo){
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig();
@@ -806,9 +820,11 @@ public class SysController extends BaseController {
         saveWebSet(domainConfig.getId(),"customer_url",customer_url);
         saveWebSet(domainConfig.getId(),"recharge_url",recharge_url);
         saveWebSet(domainConfig.getId(),"web_url",web_url);
+        saveWebSet(domainConfig.getId(),"pc_notice",pc_notice);
         saveWebSet(domainConfig.getId(),"mobile_notice",mobile_notice);
         saveWebSet(domainConfig.getId(),"pc_logo",pc_logo);
         saveWebSet(domainConfig.getId(),"m_logo",m_logo);
+        resultDo.setSuccess(true);
         return resultDo;
     }
 
@@ -819,8 +835,8 @@ public class SysController extends BaseController {
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig();
         SysAuthUser userInfo = getUserInfo();
-        Room room = roomManager.queryById(roomId);
-        if (room==null || domainConfig.getId()!=room.getDomainId()){
+        Room room = roomManager.queryByIdAndDomainId(roomId,domainConfig.getId());
+        if (room==null){
             resultDo.setErrorDesc("数据不存在");
             return resultDo;
         }
@@ -883,7 +899,7 @@ public class SysController extends BaseController {
     @ResponseBody
     @SysAuth(rule = "sys:addRobot")
     @RequestMapping(value = "/saveRobot")
-    public ResultDo saveRobot(Integer count,Long roomId){
+    public ResultDo saveRobot(Integer count, Long roomId){
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig();
         if (count == null || count<1){
@@ -928,7 +944,7 @@ public class SysController extends BaseController {
     @ResponseBody
     @SysAuth(rule = "sys:sendMsg")
     @RequestMapping(value = "/saveSendMsg")
-    public ResultDo saveSendMsg(Long roomId,String msgType,String msg) {
+    public ResultDo saveSendMsg(Long roomId, String msgType, String msg) {
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig();
         String url = domainConfig.getHttpUrl()+"/api/sendMsg";

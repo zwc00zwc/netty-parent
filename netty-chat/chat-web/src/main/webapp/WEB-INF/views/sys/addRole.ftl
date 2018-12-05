@@ -1,5 +1,34 @@
 ﻿<#import "/sys/layout/layout.ftl" as layout>
 <@layout.layout>
+    <style>
+        .user-icon-admin {
+            height: 30px;
+            width: 30px;
+            background: url(${request.getContextPath()}/resources/chat/pc/images/user_level_icon.png) center top no-repeat;
+            background-size: 100% auto;
+        }
+
+        .user-icon-plan {
+            height: 30px;
+            width: 30px;
+            background: url(${request.getContextPath()}/resources/chat/pc/images/user_level_icon.png) center -35px no-repeat;
+            background-size: 100% auto;
+        }
+
+        .user-icon-vip {
+            height: 30px;
+            width: 30px;
+            background: url(${request.getContextPath()}/resources/chat/pc/images/user_level_icon.png) center -69px no-repeat;
+            background-size: 100% auto;
+        }
+
+        .user-icon-nomal {
+            height: 30px;
+            width: 30px;
+            background: url(${request.getContextPath()}/resources/chat/pc/images/user_level_icon.png) center bottom no-repeat;
+            background-size: 100% auto;
+        }
+    </style>
     <article class="page-container">
         <form action="" method="post" class="form form-horizontal" id="form-role-add">
             <input type="hidden" value="${role.id!''}" id="id" name="id">
@@ -17,7 +46,11 @@
                         <input id="roleIconUpload" type="file" class="input-file valid" name="fileupload" data-url="/upload" multiple="">
                     </span>
                     <input type="hidden" name="roleIcon" id="roleIcon" value="${role.roleIcon!''}" style="width:200px">
-                    <img id="roleIconUploadSrc" src="${role.roleIcon!''}" />
+                    <#if role.roleIcon?? && role.roleIcon?contains("http")>
+                        <img id="roleIconUploadSrc" src="${role.roleIcon!''}" />
+                        <#else>
+                        <img id="roleIconUploadSrc" class="${role.roleIcon!''}" />
+                    </#if>
                 </div>
             </div>
             <div class="row cl">

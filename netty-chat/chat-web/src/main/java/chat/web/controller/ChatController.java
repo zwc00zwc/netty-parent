@@ -1,18 +1,23 @@
 package chat.web.controller;
 
-import chat.web.auth.SysAuthUser;
+import com.shuangying.core.common.domain.AppConfig;
 import com.shuangying.core.common.domain.ManagerException;
+import com.shuangying.core.common.domain.PageResult;
 import com.shuangying.core.common.domain.ResultDo;
 import com.shuangying.core.common.upload.AliyunOssManager;
+import com.shuangying.core.common.utility.DateUtils;
 import com.shuangying.core.common.utility.Md5Manager;
 import com.shuangying.core.db.manager.ReceiveRedbagManager;
 import com.shuangying.core.db.manager.RoomManager;
+import com.shuangying.core.db.manager.SystemDictManager;
 import com.shuangying.core.db.manager.UserManager;
 import com.shuangying.core.db.model.DomainConfig;
 import com.shuangying.core.db.model.ReceiveRedbag;
 import com.shuangying.core.db.model.Room;
+import com.shuangying.core.db.model.SystemDict;
 import com.shuangying.core.db.model.User;
 import com.shuangying.core.db.model.dto.UserInfoDto;
+import com.shuangying.core.db.model.query.ReceiveRedBagQuery;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +37,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,17 +61,20 @@ public class ChatController extends BaseController {
     private ReceiveRedbagManager receiveRedbagManager;
 
     @Autowired
+    private SystemDictManager systemDictManager;
+
+    @Autowired
     private MultipartResolver multipartResolver;
 
-    @RequestMapping(value = "/index")
-    public String index(HttpServletRequest req, Model model, String token, Long roomId) {
+    @RequestMapping(value = "/demo")
+    public String demo(HttpServletRequest req, Model model, String token, Long roomId){
         DomainConfig domainConfig = getDomainConfig();
         String websocket = domainConfig.getWebsocketUrl();
         model.addAttribute("token", token);
         model.addAttribute("domain", domainConfig.getDomainName());
         Room room = null;
-        room = roomManager.queryById(roomId);
-        if (room == null || !domainConfig.equals(room.getDomainId())) {
+        room = roomManager.queryByIdAndDomainId(roomId,domainConfig.getId());
+        if (room == null) {
             room = roomManager.queryDefaultRoom(domainConfig.getId());
         }
         if (room == null) {
@@ -75,11 +86,104 @@ public class ChatController extends BaseController {
             model.addAttribute("websocket", room.getWebsocketUrl());
         }
         model.addAttribute("roomId", room.getId());
+        return "/chat/demo";
+    }
+
+    @RequestMapping(value = "/index")
+    public String index(HttpServletRequest req, Model model, @RequestParam(value = "roomId",defaultValue = "0") Long roomId) {
+        DomainConfig domainConfig = getDomainConfig();
+        Room room = null;
+        if (roomId>0){
+            room = roomManager.queryByIdAndDomainId(roomId,domainConfig.getId());
+            if (room == null) {
+                model.addAttribute("msg","房间不存在");
+                return "/chat/error";
+            }
+            if (room.getOpenRoom()==2){
+                User user = getUserInfo(domainConfig.getId());
+                if (user == null){
+                    model.addAttribute("msg","没有权限进入该房间");
+                    return "/chat/error";
+                }
+                if (!user.getRoomId().equals(room.getId())){
+                    model.addAttribute("msg","没有权限进入该房间");
+                    return "/chat/error";
+                }
+            }
+        }else {
+            room = roomManager.queryDefaultRoom(domainConfig.getId());
+            if (room == null) {
+                model.addAttribute("msg","房间数据有误");
+                return "/chat/error";
+            }
+        }
+        //房间信息
+        model.addAttribute("domainName", domainConfig.getDomainName());
+        model.addAttribute("room", room);
+        //tab信息
+        List<SystemDict> tabmenu = systemDictManager.queryGroupKey(domainConfig.getId(),AppConfig.TabMenu,AppConfig.PcTabMenu);
+        model.addAttribute("tabmenu", tabmenu);
+        //房间列表
+        List<Room> roomList = roomManager.queryList(domainConfig.getId());
+        model.addAttribute("roomList", roomList);
+        //网站设置信息
+        List<SystemDict> webset = systemDictManager.queryGroupAllByDomainId(domainConfig.getId(),AppConfig.WebSet);
+        Map<String,String> map = new HashMap<>();
+        if (webset!=null && webset.size()>0){
+            for (SystemDict r : webset){
+                map.put(r.getSysKey(),r.getSysValue());
+            }
+        }
+        model.addAttribute("websetmap", map);
         return "/chat/index";
     }
 
     @RequestMapping(value = "/mIndex")
-    public String mIndex() {
+    public String mIndex(HttpServletRequest req, Model model, @RequestParam(value = "roomId",defaultValue = "0") Long roomId) {
+        DomainConfig domainConfig = getDomainConfig();
+        Room room = null;
+        if (roomId>0){
+            room = roomManager.queryByIdAndDomainId(roomId,domainConfig.getId());
+            if (room == null) {
+                model.addAttribute("msg","房间不存在");
+                return "/chat/error";
+            }
+            if (room.getOpenRoom()==2){
+                User user = getUserInfo(domainConfig.getId());
+                if (user == null){
+                    model.addAttribute("msg","没有权限进入房间");
+                    return "/chat/error";
+                }
+                if (!user.getRoomId().equals(room.getId())){
+                    model.addAttribute("msg","没有权限进入房间");
+                    return "/chat/error";
+                }
+            }
+        }else {
+            room = roomManager.queryDefaultRoom(domainConfig.getId());
+            if (room == null) {
+                model.addAttribute("msg","房间数据有误");
+                return "/chat/error";
+            }
+        }
+        //房间信息
+        model.addAttribute("domainName", domainConfig.getDomainName());
+        model.addAttribute("room", room);
+        //tab信息
+        List<SystemDict> tabmenu = systemDictManager.queryGroupKey(domainConfig.getId(),AppConfig.TabMenu,AppConfig.MTabMenu);
+        model.addAttribute("tabmenu", tabmenu);
+        //房间列表信息
+        List<Room> roomList = roomManager.queryList(domainConfig.getId());
+        model.addAttribute("roomList", roomList);
+        //网站设置信息
+        List<SystemDict> webset = systemDictManager.queryGroupAllByDomainId(domainConfig.getId(),AppConfig.WebSet);
+        Map<String,String> map = new HashMap<>();
+        if (webset!=null && webset.size()>0){
+            for (SystemDict r : webset){
+                map.put(r.getSysKey(),r.getSysValue());
+            }
+        }
+        model.addAttribute("websetmap", map);
         return "/chat/mIndex";
     }
 
@@ -89,7 +193,7 @@ public class ChatController extends BaseController {
     }
 
     @RequestMapping(value = "/mlogin")
-    public String mlogin() {
+    public String mlogin(Model model) {
         return "/chat/mlogin";
     }
 
@@ -98,7 +202,7 @@ public class ChatController extends BaseController {
     public ResultDo logined(String username, String password) {
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig();
-        resultDo = userManager.logined(domainConfig.getId(), username, password);
+        resultDo = userManager.logined(domainConfig.getId(), username, password,false);
         return resultDo;
     }
 
@@ -107,12 +211,7 @@ public class ChatController extends BaseController {
     public ResultDo loginOut() {
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig();
-        SysAuthUser sysAuthUser = getUserInfo();
-        if (sysAuthUser == null) {
-            resultDo.setSuccess(true);
-            return resultDo;
-        }
-        User user = userManager.queryById(sysAuthUser.getUserId());
+        User user = getUserInfo(domainConfig.getId());
         if (user == null || !domainConfig.getId().equals(user.getDomainId())) {
             resultDo.setSuccess(true);
             return resultDo;
@@ -141,7 +240,7 @@ public class ChatController extends BaseController {
     public void saveDeskTop(HttpServletResponse response, String title, String url) throws IOException {
         String templateContent = "[InternetShortcut]" + "\n" + "URL= " + url + "";
         response.setContentType("application/octet-stream");
-        response.setHeader("Content-Disposition", "attachment;filename=" + title + ".url");
+        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(title, "UTF-8") + ".url");
         response.getWriter().write(templateContent);
         response.getWriter().flush();
     }
@@ -159,7 +258,7 @@ public class ChatController extends BaseController {
     //    @UserInfo()
     @ResponseBody
     @RequestMapping(value = "/ajaxReceiveRedBag", method = RequestMethod.POST)
-    public ResultDo ajaxReceiveRedBag(String token) {
+    public ResultDo ajaxReceiveRedBag(String token, ReceiveRedBagQuery postQuery) {
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig();
         //SysAuthUser sysAuthUser = getUserInfo();
@@ -168,8 +267,14 @@ public class ChatController extends BaseController {
             resultDo.setErrorDesc("登录信息错误");
             return resultDo;
         }
-        List<ReceiveRedbag> list = receiveRedbagManager.queryUserReceived(domainConfig.getId(), user.getId());
-        resultDo.setList(list);
+        ReceiveRedBagQuery query = new ReceiveRedBagQuery();
+        query.setDomainId(domainConfig.getId());
+        query.setReceiverId(user.getId());
+        query.setStartTime(DateUtils.addDate(new Date(),-3));
+        query.setiDisplayStart(postQuery.getiDisplayStart());
+        query.setiDisplayLength(postQuery.getiDisplayLength());
+        PageResult<ReceiveRedbag> list = receiveRedbagManager.queryPage(query);
+        resultDo.setResult(list);
         return resultDo;
     }
 
@@ -353,5 +458,10 @@ public class ChatController extends BaseController {
         } catch (Exception e) {
             return resultDo;
         }
+    }
+
+    @RequestMapping(value = "/404")
+    public String error(){
+        return "/chat/404";
     }
 }

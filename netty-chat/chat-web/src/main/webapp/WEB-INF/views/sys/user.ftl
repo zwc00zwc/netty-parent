@@ -42,7 +42,7 @@
             <thead>
             <tr class="text-c">
                 <th>用户名</th>
-                <th>密码</th>
+                <#--<th>密码</th>-->
                 <th>登录IP</th>
                 <th>所在房间</th>
                 <th>角色</th>

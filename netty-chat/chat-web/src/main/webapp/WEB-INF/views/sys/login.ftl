@@ -93,7 +93,7 @@
             data: $('#loginForm').serialize(),
             success: function (result) {
                 if (result.success) {
-                    Cookies.set('chat_token', result.result.token, { expires: 7 });
+                    Cookies.set('sys_token', result.result.token, { expires: 7 });
                     window.location.href = "/sys/index";
                 } else {
                     //fGetCode();

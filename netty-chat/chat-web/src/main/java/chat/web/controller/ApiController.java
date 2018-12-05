@@ -16,6 +16,8 @@ import com.shuangying.core.db.model.DomainConfig;
 import com.shuangying.core.db.model.Room;
 import com.shuangying.core.db.model.User;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +36,7 @@ import java.util.UUID;
 @Controller
 @RequestMapping(value = "/api")
 public class ApiController extends BaseController {
+    private Logger logger = LoggerFactory.getLogger(ApiController.class);
     @Autowired
     private UserManager userManager;
 
@@ -48,6 +51,10 @@ public class ApiController extends BaseController {
     public ResultDo sign(String sign) {
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig();
+        if (StringUtils.isEmpty(sign)){
+            resultDo.setErrorDesc("签名数据为空");
+            return resultDo;
+        }
         String decryStr = RSAUtils.decryptStrByPrivateKey(sign, domainConfig.getPrivateKey());
         if (StringUtils.isEmpty(decryStr)) {
             resultDo.setErrorDesc("签名数据为空");
@@ -57,7 +64,9 @@ public class ApiController extends BaseController {
         String username = jsonObject.get("username") + "";
         String signtimestr = jsonObject.get("signtime") + "";
         Date signtime = DateUtils.getDateFromString(signtimestr, "yyyyMMddHHmmss");
-        if (signtime.before(DateUtils.addMinute(new Date(), 30)) || signtime.after(DateUtils.addMinute(new Date(), 30))) {
+        logger.info("解密username:"+username);
+        logger.info("解密signtimestr:"+signtimestr);
+        if (signtime.before(DateUtils.addMinute(new Date(), -30)) || signtime.after(DateUtils.addMinute(new Date(), 30))) {
             resultDo.setErrorDesc("请求过期");
             return resultDo;
         }

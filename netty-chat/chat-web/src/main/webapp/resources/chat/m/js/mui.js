@@ -3499,7 +3499,6 @@ Function.prototype.bind = Function.prototype.bind || function(to) {
             this.pulldown = true;
             if (this.topPocket) {
                 this.pullPocket = this.topPocket;
-                this.pullPocket.classList.add(CLASS_BLOCK);
                 this.pullPocket.classList.add(CLASS_VISIBILITY);
                 this.pullCaption = this.topCaption;
                 this.pullLoading = this.topLoading;

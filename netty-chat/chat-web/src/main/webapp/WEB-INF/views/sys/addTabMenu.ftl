@@ -16,10 +16,10 @@
                 </div>
             </div>
             <div class="row cl">
-                <label class="form-label col-xs-4 col-sm-3">类型：</label>
+                <label class="form-label col-xs-4 col-sm-3">是否下注地址：</label>
                 <div class="formControls col-xs-8 col-sm-9">
                     <span class="select-box">
-                        <select class="select" size="1" name="RoleId">
+                        <select class="select" size="1" name="sysType">
                             <#if (tabMenu.sysType!'0'?number) == 0>
                                     <option selected="selected" value="0">普通地址</option>
                                 <#else>
@@ -28,7 +28,26 @@
                                 <#if (tabMenu.sysType!'0'?number) == 1>
                                     <option selected="selected" value="1">下注地址</option>
                                 <#else>
-                                    <option selected="selected" value="1">下注地址</option>
+                                    <option value="1">下注地址</option>
+                            </#if>
+                        </select>
+                    </span>
+                </div>
+            </div>
+            <div class="row cl">
+                <label class="form-label col-xs-4 col-sm-3">类型：</label>
+                <div class="formControls col-xs-8 col-sm-9">
+                    <span class="select-box">
+                        <select class="select" size="1" name="sysKey">
+                            <#if (tabMenu.sysKey!'') == 'mTabMenu'>
+                                    <option selected="selected" value="mobile">手机菜单</option>
+                            <#else>
+                                    <option value="mobile">手机菜单</option>
+                            </#if>
+                            <#if (tabMenu.sysKey!'') == 'pcTabMenu'>
+                                <option selected="selected" value="pc">PC菜单</option>
+                            <#else>
+                                <option value="pc">PC菜单</option>
                             </#if>
                         </select>
                     </span>

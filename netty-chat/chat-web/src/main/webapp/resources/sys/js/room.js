@@ -118,7 +118,7 @@ function getAllOperation(row) {
 
 $("#room_table").on("click", '#edit', function () {
     var id = $(this).attr("data-id");
-    layer_show('编辑用户', '/sys/addRoom?id=' + id + '', '', '800');
+    layer_show('编辑房间', '/sys/addRoom?id=' + id + '', '', '800');
 });
 
 $("#room_table").on("click", '#forbid', function () {

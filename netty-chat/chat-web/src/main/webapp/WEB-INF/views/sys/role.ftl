@@ -1,5 +1,34 @@
 <#import "/sys/layout/layout.ftl" as layout>
 <@layout.layout>
+    <style>
+        .user-icon-admin {
+            height: 30px;
+            width: 30px;
+            background: url(${request.getContextPath()}/resources/chat/pc/images/user_level_icon.png) center top no-repeat;
+            background-size: 100% auto;
+        }
+
+        .user-icon-plan {
+            height: 30px;
+            width: 30px;
+            background: url(${request.getContextPath()}/resources/chat/pc/images/user_level_icon.png) center -35px no-repeat;
+            background-size: 100% auto;
+        }
+
+        .user-icon-vip {
+            height: 30px;
+            width: 30px;
+            background: url(${request.getContextPath()}/resources/chat/pc/images/user_level_icon.png) center -69px no-repeat;
+            background-size: 100% auto;
+        }
+
+        .user-icon-nomal {
+            height: 30px;
+            width: 30px;
+            background: url(${request.getContextPath()}/resources/chat/pc/images/user_level_icon.png) center bottom no-repeat;
+            background-size: 100% auto;
+        }
+    </style>
     <nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 会员管理 <span class="c-gray en">&gt;</span> 角色管理 <a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新"><i class="Hui-iconfont">&#xe68f;</i></a></nav>
     <div class="page-container">
     <div class="cl pd-5 bg-1 bk-gray">

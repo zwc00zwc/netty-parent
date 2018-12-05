@@ -13,8 +13,8 @@
             领取状态:
             <select id="status" class="input-text" style="width:250px">
                 <option value="0">全部</option>
-                <option value="1">未领取</option>
-                <option value="2">已领取</option>
+                <option value="1">未兑换</option>
+                <option value="2">已兑换</option>
             </select>
             <button type="submit" class="btn btn-success radius" id="search" name=""><i class="Hui-iconfont">&#xe665;</i> 搜索</button>
         </div>

@@ -1,10 +1,12 @@
 package chat.web.dto;
 
+import java.io.Serializable;
+
 /**
  * @auther a-de
  * @date 2018/11/12 13:44
  */
-public class MonitorOnlineDto {
+public class MonitorOnlineDto implements Serializable {
     private String roomName;
 
     private Integer onlineCount;

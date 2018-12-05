@@ -9,9 +9,9 @@
         <div class="text-c">
             tab菜单类型:
             <select id="sysKey" class="input-text" style="width:250px">
-                <option value="0">全部</option>
-                <option value="1">手机菜单</option>
-                <option value="2">pc菜单</option>
+                <option value="">全部</option>
+                <option value="mTabMenu">手机菜单</option>
+                <option value="pcTabMenu">pc菜单</option>
             </select>
             <button type="submit" class="btn btn-success radius" id="search" name=""><i class="Hui-iconfont">&#xe665;</i> 搜索</button>
         </div>

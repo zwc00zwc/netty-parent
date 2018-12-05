@@ -42,7 +42,7 @@ public class UserInfoService {
     }
 
     @Before("@annotation(userInfo)")
-    public void before(SysAuth userInfo) throws SysAuthException {
+    public void before(UserInfo userInfo) throws SysAuthException {
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = requestAttributes.getRequest();
         Cookie cookie = null;

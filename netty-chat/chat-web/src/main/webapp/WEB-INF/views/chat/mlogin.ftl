@@ -5,31 +5,26 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta http-equiv="x-dns-prefetch-control" content="on" />
-    <title>起点彩票</title>
+    <title>登录</title>
     <meta name="viewport" content="width=320.1,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,minimal-ui" />
-    <meta name="apple-mobile-web-app-title" content="起点彩票" /><meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="登录" /><meta name="apple-mobile-web-app-capable" content="yes" />
     <meta content="telephone=no" name="format-detection" />
     <meta name="full-screen" content="yes" />
     <meta name="x5-fullscreen" content="true" />
-    <link rel="stylesheet" type="text/css" href="${request.getContextPath()}/resources/chat/m/css/mui.css"/>
-    <link rel="stylesheet" type="text/css" href="${request.getContextPath()}/resources/chat/m/css/main.css" />
-    <script type="text/javascript" src="${request.getContextPath()}/resources/chat/m/js/common.js"></script>
-    <script type="text/javascript" src="${request.getContextPath()}/resources/chat/m/js/rem.js"></script>
-    <script type="text/javascript" src="${request.getContextPath()}/resources/chat/m/js/jquery.min.js"></script>
-    <script type="text/javascript" src="${request.getContextPath()}/resources/chat/m/js/jquery.cookie.js"></script>
-    <script type="text/javascript" src="${request.getContextPath()}/resources/chat/m/js/mui.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/resources/chat/m/css/mui.css"/>
+    <link rel="stylesheet" type="text/css" href="/resources/chat/m/css/main.css" />
 </head>
 
 <body>
 <header>
     <a href= "index.html" class="back">
-        <img src="${request.getContextPath()}/resources/chat/m/images/back.png" />
+        <img src="/resources/chat/m/images/back.png" />
     </a>
     <h1 class="title">登录</h1>
 </header>
 <div class="loginContent">
     <div class="avatar">
-        <img src="${request.getContextPath()}/resources/chat/m/images/userSet.png" />
+        <img src="/resources/chat/m/images/userSet.png" />
     </div>
     <div class="loginBox">
         <div class="input_row usernameRow">
@@ -37,8 +32,8 @@
         </div>
         <div class="input_row passwordRow">
             <input type="password" id="password" value="" placeholder="用户密码" autocomplete="off" />
-            <img id="passHidden" class="passHidden" src="${request.getContextPath()}/resources/chat/m/images/passHidden.png" onclick="pwdFun1(this)"/>
-            <img id="passSee" class="passSee" src="${request.getContextPath()}/resources/chat/m/images/passSee.png" onclick="pwdFun2(this)"/>
+            <img id="passHidden" class="passHidden" src="/resources/chat/m/images/passHidden.png" onclick="pwdFun1(this)"/>
+            <img id="passSee" class="passSee" src="/resources/chat/m/images/passSee.png" onclick="pwdFun2(this)"/>
         </div>
     </div>
 
@@ -48,7 +43,16 @@
 </div>
 
 </body>
+<script>
+    var ip='${request.getContextPath()}';
+</script>
+<script type="text/javascript" src="/resources/chat/m/js/common.js"></script>
+<script type="text/javascript" src="/resources/chat/m/js/rem.js"></script>
+<script type="text/javascript" src="/resources/chat/m/js/jquery.min.js"></script>
+<script type="text/javascript" src="/resources/chat/m/js/jquery.cookie.js"></script>
+<script type="text/javascript" src="/resources/chat/m/js/mui.js"></script>
 <script type="text/javascript">
+
     function submit(){
         var $username=$("#username").val();
         var $password=$("#password").val();
@@ -79,6 +83,7 @@
                     userObj.push(user);
                     var objString = JSON.stringify(userObj);
                     $.cookie('userInfo',objString);
+                    $t.cookie.set('user_info', JSON.stringify(data.result), 'd7');
                     setTimeout(function(){
                         window.location='/chat/mIndex';
                     },1000)

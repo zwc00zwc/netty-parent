@@ -52,7 +52,7 @@ public class SysAuthService {
         Cookie[] cookies = request.getCookies();
         if (cookies != null && cookies.length > 0) {
             for (int i = 0; i < cookies.length; i++) {
-                if (Constants.CHAT_USER_TOKEN.equals(cookies[i].getName())) {
+                if (Constants.SYS_USER_TOKEN.equals(cookies[i].getName())) {
                     cookie = cookies[i];
                 }
             }
@@ -65,7 +65,7 @@ public class SysAuthService {
         if (domainConfig == null) {
             throw new SysAuthException("域名未开通");
         }
-        User user = userManager.queryByDomainIdAndToken(domainConfig.getId(), cookie.getValue());
+        User user = userManager.queryByDomainIdAndSysToken(domainConfig.getId(), cookie.getValue());
         if (user == null) {
             throw new SysAuthException("未登录");
         }

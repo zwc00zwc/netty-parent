@@ -33,9 +33,15 @@
                         </div>
                     </div>
                     <div class="row cl">
+                        <label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>PC公告：</label>
+                        <div class="formControls col-xs-8 col-sm-9">
+                            <textarea id="pc_notice" name="pc_notice" name="mobile_notice" class="textarea">${map["pc_notice"]!''}</textarea>
+                        </div>
+                    </div>
+                    <div class="row cl">
                         <label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>手机端公告：</label>
                         <div class="formControls col-xs-8 col-sm-9">
-                            <input type="text" class="input-text" value="${map["mobile_notice"]!''}" placeholder="" id="mobile_notice" name="mobile_notice">
+                            <textarea id="mobile_notice" name="mobile_notice" class="textarea">${map["mobile_notice"]!''}</textarea>
                         </div>
                     </div>
                     <div class="row cl">
@@ -127,36 +133,15 @@
                         type: "post",
                         success: function (data) {
                             if (data.success) {
-                                layer.msg('保存成功', { icon: 1, time: 1000 });
+                                alert('保存成功');
                             }
                             else {
-                                layer.msg(data.errorDesc, { icon: 1, time: 1000 });
+                                layer.msg(data.errorDesc, { icon: 5, time: 1000 });
                             }
                         }
                     });
                 }
             });
-            
-            $("#forbid_btn").click(function () {
-                jQuery.ajax({
-                    url: '/sys/forbid',
-                    type: "post",
-                    success: function (data) {
-                        if (data.success) {
-                            if (data.result == 1){
-                                layer.msg('开启禁言成功', { icon: 1, time: 1000 });
-                                $("#forbid_btn").val("关闭禁言");
-                            }else {
-                                layer.msg('关闭禁言成功', { icon: 1, time: 1000 });
-                                $("#forbid_btn").val("开启禁言");
-                            }
-                        }
-                        else {
-                            layer.msg(data.errorDesc, { icon: 1, time: 1000 });
-                        }
-                    }
-                });
-            })
         });
     </script>
 </@layout.layout>

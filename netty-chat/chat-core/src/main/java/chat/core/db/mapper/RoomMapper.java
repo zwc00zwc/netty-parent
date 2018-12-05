@@ -17,6 +17,8 @@ public interface RoomMapper {
 
     Room queryById(@Param("id") Long id);
 
+    Room queryByIdAndDomainId(@Param("id") Long id, @Param("domainId") Long domainId);
+
     int queryPageCount(@Param("query") RoomQuery query);
 
     List<Room> queryPageList(@Param("query") RoomQuery query);

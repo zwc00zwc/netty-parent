@@ -17,6 +17,8 @@ public interface RoomManager {
 
     Room queryById(Long id);
 
+    Room queryByIdAndDomainId(Long id, Long domainId);
+
     Room queryByIdCache(Long id);
 
     PageResult queryPage(RoomQuery query);

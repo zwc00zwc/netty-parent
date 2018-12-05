@@ -156,6 +156,11 @@
         from tb_room where id = #{id} and del_flag = 1
     </select>
 
+    <select id="queryByIdAndDomainId" resultMap="BaseResultMap">
+        <include refid="select_sql"/>
+        from tb_room where id = #{id} and domain_id=#{domainId} and del_flag = 1
+    </select>
+
     <select id="queryPageCount" resultType="java.lang.Integer">
         select count(*) from tb_room
         <where>

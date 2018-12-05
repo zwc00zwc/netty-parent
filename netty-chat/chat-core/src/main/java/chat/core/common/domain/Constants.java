@@ -9,4 +9,8 @@ public class Constants {
 
     public final static String CHAT_USER_TOKEN="chat_token";
 
+    public final static String SYS_USER_TOKEN="sys_token";
+
+    public final static String USERINFO="user_info";
+
 }

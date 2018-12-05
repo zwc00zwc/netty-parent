@@ -55,38 +55,46 @@ public class UserManagerImpl implements UserManager {
     }
 
     @Override
-    public ResultDo logined(Long domainId, String username, String password) {
+    public ResultDo logined(Long domainId, String username, String password, boolean sys) {
         ResultDo resultDo = new ResultDo<>();
         try {
-            User user = userMapper.queryByUserName(username,domainId);
-            if (user==null){
+            User user = userMapper.queryByUserName(username, domainId);
+            if (user == null) {
                 resultDo.setErrorDesc("账号或密码错误");
                 return resultDo;
             }
-            String p = Md5Manager.md5(password,user.getSalt());
-            if (!user.getPassword().equals(p)){
+            String p = Md5Manager.md5(password, user.getSalt());
+            if (!user.getPassword().equals(p)) {
                 resultDo.setErrorDesc("账号或密码错误");
                 return resultDo;
             }
-            user.setToken(UUID.randomUUID().toString().replace("-",""));
-            if (userMapper.update(user)>0){
+            String token = UUID.randomUUID().toString().replace("-", "");
+            if (sys){
+                user.setSysToken(token);
+            }else {
+                user.setToken(token);
+            }
+            if (userMapper.update(user) > 0) {
                 Map map = new HashMap();
-                Role role = roleManager.queryById(user.getRoleId());
-                map.put("userId",user.getId());
-                map.put("token",user.getToken());
-                map.put("userName",user.getUserName());
-                map.put("userIcon",user.getIcon());
-                map.put("roomId",user.getRoomId());
-                if (role != null){
-                    List<String> authority = roleManager.queryRoleAuthority(role.getId(),2);
-                    map.put("roleName",role.getRoleName());
-                    map.put("authority",authority);
+                map.put("userId", user.getId());
+                map.put("token", token);
+                map.put("userName", user.getUserName());
+                map.put("userIcon", user.getIcon());
+                map.put("roomId", user.getRoomId());
+                if (!sys){
+                    Role role = roleManager.queryById(user.getRoleId());
+                    if (role != null) {
+                        List<String> authority = roleManager.queryRoleAuthority(role.getId(), 2);
+                        map.put("roleName", role.getRoleName());
+                        map.put("authority", authority);
+                    }
                 }
+
                 resultDo.setResult(map);
                 return resultDo;
             }
         } catch (Exception e) {
-            logger.error("用户 logined异常",e);
+            logger.error("用户 logined异常", e);
             throw new ManagerException(e);
         }
         return resultDo;
@@ -206,6 +214,16 @@ public class UserManagerImpl implements UserManager {
     }
 
     @Override
+    public User queryByDomainIdAndSysToken(Long domainId, String sysToken) {
+        try {
+            return userMapper.queryByDomainIdAndSysToken(domainId,sysToken);
+        } catch (Exception e) {
+            logger.error("用户 queryByDomainIdAndSysToken异常",e);
+            throw new ManagerException(e);
+        }
+    }
+
+    @Override
     public boolean updateLoginIp(Long id, String ip) {
         try {
             if (userMapper.updateLoginIp(ip,id)>0){
@@ -279,6 +297,19 @@ public class UserManagerImpl implements UserManager {
             }
         } catch (Exception e) {
             logger.error("用户 removeToken异常",e);
+            throw new ManagerException(e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean removeSysToken(Long id) {
+        try {
+            if (userMapper.removeSysToken(id)>0){
+                return true;
+            }
+        } catch (Exception e) {
+            logger.error("用户 removeSysToken异常",e);
             throw new ManagerException(e);
         }
         return false;

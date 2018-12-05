@@ -17,6 +17,8 @@ public interface BlackIpMapper {
 
     BlackIp queryById(@Param("id") Long id);
 
+    BlackIp queryByIdAndDomainId(@Param("id") Long id, @Param("domainId") Long domainId);
+
     int queryPageCount(@Param("query") BlackIpQuery query);
 
     List<BlackIp> queryPageList(@Param("query") BlackIpQuery query);

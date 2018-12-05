@@ -111,7 +111,7 @@
 
     <select id="queryByKey" resultMap="BaseResultMap">
         <include refid="select_sql"/>
-        from tb_system_dict where domain_id = #{domainId} and sys_group = #{group} and sys_key = #{key} and del_flag = 1
+        from tb_system_dict where domain_id = #{domainId} and sys_group = #{group} and sys_key = #{key} and del_flag = 1 LIMIT 1
     </select>
     
     <select id="queryGroupAllByDomainId" resultMap="BaseResultMap">
@@ -156,5 +156,9 @@
                 and sys_type = #{query.sysType}
             </if>
         </where>
+    </select>
+
+    <select id="queryGroupKey" resultMap="BaseResultMap">
+        <include refid="select_sql"/> from tb_system_dict where domain_id = #{domainId} and sys_group = #{sysGroup} and sys_key = #{sysKey}
     </select>
 </mapper>

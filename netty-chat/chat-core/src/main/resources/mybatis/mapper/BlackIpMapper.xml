@@ -43,6 +43,10 @@
         <include refid="select_sql"/> from tb_black_ip where id = #{id}
     </select>
 
+    <select id="queryByIdAndDomainId" resultMap="BaseResultMap">
+        <include refid="select_sql"/> from tb_black_ip where id = #{id} and domain_id=#{domainId}
+    </select>
+
     <delete id="delete">
         delete from tb_black_ip where id = #{id} and domain_id = #{domainId}
     </delete>

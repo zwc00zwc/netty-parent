@@ -21,6 +21,8 @@ public interface ReceiveRedbagManager {
 
     ReceiveRedbag queryById(Long id);
 
+    ReceiveRedbag queryByIdAndDomainId(Long id, Long domainId);
+
     List<ReceiveRedbag> queryUserReceived(Long domainId, Long userId);
 
     ReceiveRedbag userReceivedRedbag(String domain, Long redBagId, Long userId);

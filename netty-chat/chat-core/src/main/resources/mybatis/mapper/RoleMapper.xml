@@ -107,6 +107,11 @@
         from sys_role where id = #{id}
     </select>
 
+    <select id="queryByIdAndDomainId" resultMap="BaseResultMap">
+        <include refid="select_sql"/>
+        from sys_role where id = #{id} and domain_id=#{domainId}
+    </select>
+
     <select id="queryPageList" resultMap="BaseResultMap">
         <include refid="select_sql"/> from sys_role
         <where>

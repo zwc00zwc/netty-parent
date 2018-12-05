@@ -17,6 +17,8 @@ public interface RoleMapper {
 
     Role queryById(@Param("id") Long id);
 
+    Role queryByIdAndDomainId(@Param("id") Long id, @Param("domainId") Long domainId);
+
     List<Role> queryPageList(@Param("query") RoleQuery query);
 
     int queryPageCount(@Param("query") RoleQuery query);

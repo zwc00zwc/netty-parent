@@ -29,6 +29,10 @@ public class Redbag extends AbstractBaseObject {
      */
     private String sendUserName;
     /**
+     * 发放人头像
+     */
+    private String sendUserIcon;
+    /**
      * 总金额
      */
     private BigDecimal amount;
@@ -83,6 +87,14 @@ public class Redbag extends AbstractBaseObject {
 
     public void setSendUserName(String sendUserName) {
         this.sendUserName = sendUserName;
+    }
+
+    public String getSendUserIcon() {
+        return sendUserIcon;
+    }
+
+    public void setSendUserIcon(String sendUserIcon) {
+        this.sendUserIcon = sendUserIcon;
     }
 
     public BigDecimal getAmount() {

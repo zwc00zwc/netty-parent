@@ -34,11 +34,15 @@ public interface UserMapper {
 
     User queryByDomainIdAndToken(@Param("domainId") Long domainId, @Param("token") String token);
 
+    User queryByDomainIdAndSysToken(@Param("domainId") Long domainId, @Param("sysToken") String sysToken);
+
     int updateLoginIp(@Param("loginIp") String loginIp, @Param("id") Long id);
 
     List<UserOnlineDto> queryOnlineList(@Param("domainId") Long domainId, @Param("roomId") Long roomId, @Param("count") Integer count);
 
     int removeToken(@Param("id") Long id);
+
+    int removeSysToken(@Param("id") Long id);
 
     UserInfoDto queryUserInfo(@Param("domainId") Long domainId, @Param("token") String token);
 }

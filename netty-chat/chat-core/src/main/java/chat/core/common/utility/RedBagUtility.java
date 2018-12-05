@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * @auther a-de
@@ -49,6 +48,13 @@ public class RedBagUtility {
         return null;
     }
 
+    public static void main(String[] args){
+        List<BigDecimal> list = splitRedBag(new BigDecimal(1),100);
+        for (BigDecimal b:list) {
+            System.out.print("红包金额：" + b);
+        }
+    }
+
     /**
      * 生成红包
      *
@@ -61,15 +67,15 @@ public class RedBagUtility {
         BigDecimal percent;
         List<BigDecimal> percentList = new ArrayList<>();
         BigDecimal percentTotal = BigDecimal.ZERO;
-        for (int i = 0; i < count; i++) {
-            //每个红包百分比
-            Random random = new Random();
-            percent = new BigDecimal(random.nextInt(10));
-            percentList.add(percent);
-            percentTotal = percentTotal.add(percent);
-        }
-        if (percentTotal.compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal ave = amount.divide(percentTotal);
+
+        if (count>1){
+            for (int i = 0; i < count; i++) {
+                //每个红包百分比
+                percent = new BigDecimal(RandomUtils.getRandom(10));
+                percentList.add(percent);
+                percentTotal = percentTotal.add(percent);
+            }
+            BigDecimal ave = amount.divide(percentTotal,2,BigDecimal.ROUND_DOWN);
             BigDecimal res;
             BigDecimal show;
             for (int i = 0; i < percentList.size() - 1; i++) {
@@ -81,8 +87,10 @@ public class RedBagUtility {
                 amount = amount.subtract(show);
                 redBagList.add(show);
             }
+            redBagList.add(amount);
+        }else {
+            redBagList.add(amount);
         }
-        redBagList.add(amount);
         return redBagList;
     }
 }

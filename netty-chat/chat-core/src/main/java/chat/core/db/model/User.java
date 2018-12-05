@@ -52,6 +52,10 @@ public class User extends AbstractBaseObject {
      */
     private String remark;
     /**
+     * 后台登录信息
+     */
+    private String sysToken;
+    /**
      * token
      */
     private String token;
@@ -154,6 +158,14 @@ public class User extends AbstractBaseObject {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public String getSysToken() {
+        return sysToken;
+    }
+
+    public void setSysToken(String sysToken) {
+        this.sysToken = sysToken;
     }
 
     public String getToken() {

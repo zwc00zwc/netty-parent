@@ -24,4 +24,6 @@ public interface SystemDictManager {
     List<SystemDict> queryGroupAllByDomainId(Long domainId, String group);
 
     PageResult<SystemDict> queryGroupAllPage(SystemDictQuery query);
+
+    List<SystemDict> queryGroupKey(Long domainId, String sysGroup, String sysKey);
 }

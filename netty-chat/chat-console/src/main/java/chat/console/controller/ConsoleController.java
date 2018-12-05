@@ -56,6 +56,26 @@ public class ConsoleController extends BaseController {
         return "index";
     }
 
+    @ResponseBody
+    @RequestMapping(value = "/index1")
+    String index1(){
+        RedisManager.lpush("index1","index1");
+        return "index1";
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/index2")
+    String index2(){
+        List<String> list = RedisManager.lrange("index1");
+        StringBuilder stringBuilder = new StringBuilder();
+        if (list!=null && list.size()>0){
+            for (String s : list){
+                stringBuilder.append(s);
+            }
+        }
+        return stringBuilder.toString();
+    }
+
     @RequestMapping(value = "/welcome")
     String welcome(){
         return "welcome";

@@ -78,6 +78,7 @@
         from sys_permission
         <where>
             <if test="ids!=null">
+                id in
                 <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>

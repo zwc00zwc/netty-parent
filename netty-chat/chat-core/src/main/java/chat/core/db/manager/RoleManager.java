@@ -27,6 +27,8 @@ public interface RoleManager {
 
     Role queryById(Long id);
 
+    Role queryByIdAndDomainId(Long id, Long domainId);
+
     PageResult<Role> queryPage(RoleQuery query);
 
     List<Role> queryList(Long domainId);

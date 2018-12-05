@@ -1,6 +1,5 @@
 package chat.core.db.manager;
 
-
 import chat.core.common.domain.PageResult;
 import chat.core.db.model.Redbag;
 import chat.core.db.model.query.RedBagQuery;

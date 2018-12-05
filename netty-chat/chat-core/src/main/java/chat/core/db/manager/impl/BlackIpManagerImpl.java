@@ -72,6 +72,16 @@ public class BlackIpManagerImpl implements BlackIpManager {
     }
 
     @Override
+    public BlackIp queryByIdAndDomainId(Long id, Long domainId) {
+        try {
+            return blackIpMapper.queryByIdAndDomainId(id,domainId);
+        } catch (Exception e) {
+            logger.error("黑名单queryByIdAndDomainId异常",e);
+            throw new ManagerException(e);
+        }
+    }
+
+    @Override
     public PageResult<BlackIp> queryPage(BlackIpQuery query) {
         PageResult<BlackIp> pageResult = new PageResult<>();
         try {

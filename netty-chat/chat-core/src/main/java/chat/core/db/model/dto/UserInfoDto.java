@@ -1,6 +1,5 @@
 package chat.core.db.model.dto;
 
-
 import chat.core.db.model.AbstractBaseObject;
 
 import java.util.Date;

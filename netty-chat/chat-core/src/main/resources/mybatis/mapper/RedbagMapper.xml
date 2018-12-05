@@ -12,6 +12,7 @@
         <result column="room_id" property="roomId" jdbcType="BIGINT"></result>
         <result column="send_user_id" property="sendUserId" jdbcType="BIGINT"></result>
         <result column="send_user_name" property="sendUserName" jdbcType="VARCHAR"></result>
+        <result column="send_user_icon" property="sendUserIcon" jdbcType="VARCHAR"></result>
         <result column="amount" property="amount" jdbcType="DECIMAL"></result>
         <result column="count" property="count" jdbcType="INTEGER"></result>
         <result column="remark" property="remark" jdbcType="INTEGER"></result>
@@ -19,7 +20,7 @@
     </resultMap>
 
     <sql id="select_sql">
-        SELECT id,domain_id,room_id,send_user_id,send_user_name,amount,count,remark,create_time
+        SELECT id,domain_id,room_id,send_user_id,send_user_name,send_user_icon,amount,count,remark,create_time
     </sql>
 
     <insert id="insert" parameterType="com.shuangying.core.db.model.Redbag" useGeneratedKeys="true" keyProperty="id">
@@ -36,6 +37,9 @@
             </if>
             <if test="sendUserName != null">
                 send_user_name,
+            </if>
+            <if test="sendUserIcon != null">
+                send_user_icon,
             </if>
             <if test="amount != null">
                 amount,
@@ -60,6 +64,9 @@
             </if>
             <if test="sendUserName != null">
                 #{sendUserName,jdbcType=VARCHAR},
+            </if>
+            <if test="sendUserIcon != null">
+                #{sendUserIcon,jdbcType=VARCHAR},
             </if>
             <if test="amount != null">
                 #{amount,jdbcType=DECIMAL},
@@ -88,6 +95,9 @@
             </if>
             <if test="sendUserName != null">
                 send_user_name = #{sendUserName,jdbcType=VARCHAR},
+            </if>
+            <if test="sendUserIcon != null">
+                send_user_icon = #{sendUserIcon,jdbcType=VARCHAR},
             </if>
             <if test="amount != null">
                 amount = #{amount,jdbcType=DECIMAL},
@@ -137,6 +147,7 @@
                 and create_time <![CDATA[ < ]]> #{query.endTime}
             </if>
         </where>
+        order by id desc LIMIT #{query.startRow,jdbcType=INTEGER}, #{query.pageSize,jdbcType=INTEGER}
     </select>
 
     <select id="queryById" resultMap="BaseResultMap">

@@ -26,4 +26,6 @@ public interface SystemDictMapper {
     List<SystemDict> queryGroupAllPageList(@Param("query") SystemDictQuery query);
 
     int queryGroupAllPageCount(@Param("query") SystemDictQuery query);
+
+    List<SystemDict> queryGroupKey(@Param("domainId") Long domainId, @Param("sysGroup") String sysGroup, @Param("sysKey") String sysKey);
 }

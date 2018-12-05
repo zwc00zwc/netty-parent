@@ -19,6 +19,10 @@ public class AppConfig {
      */
     public final static String TabMenu = "tabMenu";
 
+    public final static String PcTabMenu = "pcTabMenu";
+
+    public final static String MTabMenu = "mTabMenu";
+
     public final static String ChatSet = "chatSet";
 
     public final static String ForbidChat = "forbid_chat";

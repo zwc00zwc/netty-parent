@@ -14,7 +14,7 @@ import chat.core.db.model.query.UserQuery;
 public interface UserManager {
     User queryById(Long id);
 
-    ResultDo logined(Long domainId, String username, String password);
+    ResultDo logined(Long domainId, String username, String password, boolean sys);
 
     boolean insert(User user);
 
@@ -32,11 +32,15 @@ public interface UserManager {
 
     User queryByDomainIdAndToken(Long domainId, String token);
 
+    User queryByDomainIdAndSysToken(Long domainId, String sysToken);
+
     boolean updateLoginIp(Long id, String ip);
 
     ResultDo onlineUser(Long domainId, Long roomId);
 
     boolean removeToken(Long id);
+
+    boolean removeSysToken(Long id);
 
     UserInfoDto queryUserInfo(Long domainId, String token);
 }

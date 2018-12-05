@@ -282,6 +282,23 @@ public class RedisManager {
     }
 
     /**
+     * list push
+     * @param key
+     * @param value
+     */
+    public static void lpush(String key, String value) {
+        Jedis jedis = null;
+        try {
+            jedis = getClient();
+            jedis.lpush(key,value);
+        } catch (JedisConnectionException e) {
+            logger.error("removeObject异常",e);
+        } finally {
+            returnResource(jedis);
+        }
+    }
+
+    /**
      * 获取list长度
      * @param key
      * @return
@@ -327,13 +344,8 @@ public class RedisManager {
         Jedis jedis = null;
         try {
             jedis = getClient();
-            Long length = jedis.llen(key);
             List<String> list = new ArrayList<>();
-            if (length>100) {
-                list = jedis.lrange(key, length - 100, length - 1);
-            }else {
-                list = jedis.lrange(key, 0, length - 1);
-            }
+            list = jedis.lrange(key, 0,100);
             return list;
         } catch (JedisConnectionException e) {
             logger.error("lrange异常",e);
@@ -352,10 +364,7 @@ public class RedisManager {
         Jedis jedis = null;
         try {
             jedis = getClient();
-            Long length = jedis.llen(key);
-            if (length>100) {
-                jedis.ltrim(key, 0, length - 100);
-            }
+            jedis.ltrim(key, 0, 100);
         } catch (JedisConnectionException e) {
             logger.error("lrange异常",e);
         } finally {

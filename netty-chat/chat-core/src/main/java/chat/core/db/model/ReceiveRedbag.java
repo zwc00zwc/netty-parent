@@ -25,19 +25,27 @@ public class ReceiveRedbag extends AbstractBaseObject {
      */
     private Long receiveUserId;
     /**
+     * 领取人name
+     */
+    private String receiveUserName;
+    /**
+     * 发放人id
+     */
+    private Long sendUserId;
+    /**
      * 红包发送人ID
      */
     private String sendUserName;
     /**
-     * 领取人name
+     * 红包发放人头像
      */
-    private String receiveUserName;
+    private String sendUserIcon;
     /**
      * 金额
      */
     private BigDecimal amount;
     /**
-     * 状态(1-未兑换，2-已兑换)
+     * 状态(1-未兑换，2-已兑换，3-过期)
      */
     private Integer status;
     /**
@@ -85,6 +93,22 @@ public class ReceiveRedbag extends AbstractBaseObject {
         this.receiveUserId = receiveUserId;
     }
 
+    public String getReceiveUserName() {
+        return receiveUserName;
+    }
+
+    public void setReceiveUserName(String receiveUserName) {
+        this.receiveUserName = receiveUserName;
+    }
+
+    public Long getSendUserId() {
+        return sendUserId;
+    }
+
+    public void setSendUserId(Long sendUserId) {
+        this.sendUserId = sendUserId;
+    }
+
     public String getSendUserName() {
         return sendUserName;
     }
@@ -93,12 +117,12 @@ public class ReceiveRedbag extends AbstractBaseObject {
         this.sendUserName = sendUserName;
     }
 
-    public String getReceiveUserName() {
-        return receiveUserName;
+    public String getSendUserIcon() {
+        return sendUserIcon;
     }
 
-    public void setReceiveUserName(String receiveUserName) {
-        this.receiveUserName = receiveUserName;
+    public void setSendUserIcon(String sendUserIcon) {
+        this.sendUserIcon = sendUserIcon;
     }
 
     public BigDecimal getAmount() {

@@ -145,6 +145,16 @@ public class RoleManagerImpl implements RoleManager {
     }
 
     @Override
+    public Role queryByIdAndDomainId(Long id, Long domainId) {
+        try {
+            return roleMapper.queryByIdAndDomainId(id,domainId);
+        } catch (Exception e) {
+            logger.error("RoleManagerImpl queryByIdAndDomainId异常",e);
+            throw new ManagerException(e);
+        }
+    }
+
+    @Override
     public PageResult<Role> queryPage(RoleQuery query) {
         PageResult<Role> pageResult = new PageResult<>();
         try {

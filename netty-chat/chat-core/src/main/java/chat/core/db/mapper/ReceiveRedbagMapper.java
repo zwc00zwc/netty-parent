@@ -21,6 +21,8 @@ public interface ReceiveRedbagMapper {
 
     ReceiveRedbag queryById(@Param("id") Long id);
 
+    ReceiveRedbag queryByIdAndDomainId(@Param("id") Long id, @Param("domainId") Long domainId);
+
     List<ReceiveRedbag> queryUserReceived(@Param("domainId") Long domainId, @Param("receiveUserId") Long receiveUserId);
 
     ReceiveRedbag userReceivedRedbag(@Param("domainId") Long domainId, @Param("receiveUserId") Long receiveUserId, @Param("redbagId") Long redbagId);

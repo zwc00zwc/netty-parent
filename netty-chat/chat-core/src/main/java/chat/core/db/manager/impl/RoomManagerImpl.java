@@ -69,6 +69,16 @@ public class RoomManagerImpl implements RoomManager {
     }
 
     @Override
+    public Room queryByIdAndDomainId(Long id, Long domainId) {
+        try {
+            return roomMapper.queryByIdAndDomainId(id,domainId);
+        } catch (Exception e) {
+            logger.error("房间queryByIdAndDomainId 异常", e);
+            throw new ManagerException(e);
+        }
+    }
+
+    @Override
     public Room queryByIdCache(Long id) {
         try {
             String key = AppConfig.RoomCacheById + id;

@@ -117,4 +117,14 @@ public class SystemDictManagerImpl implements SystemDictManager {
         }
         return pageResult;
     }
+
+    @Override
+    public List<SystemDict> queryGroupKey(Long domainId, String sysGroup, String sysKey) {
+        try {
+            return systemDictMapper.queryGroupKey(domainId,sysGroup,sysKey);
+        } catch (Exception e) {
+            logger.error("DomainConfigManagerImpl queryGroupKey异常",e);
+            throw new ManagerException(e);
+        }
+    }
 }

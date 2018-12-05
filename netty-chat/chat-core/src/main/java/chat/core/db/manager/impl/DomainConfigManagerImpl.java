@@ -5,6 +5,7 @@ import chat.core.common.domain.ManagerException;
 import chat.core.common.domain.PageResult;
 import chat.core.common.redis.RedisManager;
 import chat.core.common.utility.Md5Manager;
+import chat.core.common.utility.RandomUtils;
 import chat.core.db.manager.DomainConfigManager;
 import chat.core.db.mapper.DomainConfigMapper;
 import chat.core.db.mapper.PermissionMapper;
@@ -80,7 +81,7 @@ public class DomainConfigManagerImpl implements DomainConfigManager {
             if (roomMapper.insert(insertRoom)<1){
                 throw new ManagerException("创建房间失败");
             }
-            //创建默认角色
+            //创建默认管理员角色
             Role insertRole = new Role();
             insertRole.setDomainId(domainConfig.getId());
             List<Long> ids = permissionMapper.queryAllIds();
@@ -93,14 +94,37 @@ public class DomainConfigManagerImpl implements DomainConfigManager {
             }
             insertRole.setPermIds(stringBuilder.toString());
             insertRole.setRoleName("超级管理员");
+            insertRole.setRoleIcon("user-icon-admin");
             insertRole.setRemark("超级管理员");
             if (roleMapper.insert(insertRole)<1){
                 throw new ManagerException("创建角色失败");
             }
 
+            //创建默认计划员
+            Role planRole = new Role();
+            planRole.setDomainId(domainConfig.getId());
+            planRole.setRoleName("计划员");
+            planRole.setRoleIcon("user-icon-plan");
+            planRole.setRemark("计划员");
+            if (roleMapper.insert(planRole)<1){
+                throw new ManagerException("创建计划员角色失败");
+            }
+
+            //创建默认会员
+            Role vipRole = new Role();
+            vipRole.setDomainId(domainConfig.getId());
+            vipRole.setRoleName("会员");
+            vipRole.setRoleIcon("user-icon-vip");
+            vipRole.setRemark("会员");
+            if (roleMapper.insert(vipRole)<1){
+                throw new ManagerException("创建会员角色失败");
+            }
+
             User insertUser = new User();
             insertUser.setDomainId(domainConfig.getId());
             insertUser.setUserName("admin");
+            int icon = RandomUtils.getRandom(25);
+            insertUser.setIcon("userIcon"+icon);
             insertUser.setRoleId(insertRole.getId());
             insertUser.setRoomId(insertRoom.getId());
             insertUser.setStatus(1);

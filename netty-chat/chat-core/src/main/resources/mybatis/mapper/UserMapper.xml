@@ -18,6 +18,7 @@
         <result column="login_ip" property="loginIp" jdbcType="VARCHAR"></result>
         <result column="status" property="status" jdbcType="INTEGER"></result>
         <result column="remark" property="remark" jdbcType="VARCHAR"></result>
+        <result column="sys_token" property="sysToken" jdbcType="VARCHAR"></result>
         <result column="token" property="token" jdbcType="VARCHAR"></result>
         <result column="create_time" property="createTime" jdbcType="TIMESTAMP"></result>
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"></result>
@@ -41,7 +42,7 @@
     </resultMap>
 
     <sql id="select_sql">
-        SELECT id,domain_id,user_name,password,salt,room_id,icon,role_id,login_ip,status,remark,token,create_time,update_time,del_flag
+        SELECT id,domain_id,user_name,password,salt,room_id,icon,role_id,login_ip,status,remark,sys_token,token,create_time,update_time,del_flag
     </sql>
 
     <insert id="insert" parameterType="com.shuangying.core.db.model.User">
@@ -76,6 +77,9 @@
             </if>
             <if test="remark != null">
                 remark,
+            </if>
+            <if test="sysToken != null">
+                sys_token,
             </if>
             <if test="token != null">
                 token,
@@ -113,6 +117,9 @@
             </if>
             <if test="remark != null">
                 #{remark,jdbcType=VARCHAR},
+            </if>
+            <if test="sysToken != null">
+                #{sysToken,jdbcType=VARCHAR},
             </if>
             <if test="token != null">
                 #{token,jdbcType=VARCHAR},
@@ -154,6 +161,9 @@
             </if>
             <if test="remark != null">
                 remark = #{remark,jdbcType=VARCHAR},
+            </if>
+            <if test="sysToken != null">
+                sys_token = #{sysToken,jdbcType=VARCHAR},
             </if>
             <if test="token != null">
                 token = #{token,jdbcType=VARCHAR},
@@ -253,6 +263,11 @@
         where domain_id=#{domainId} and token=#{token} and del_flag = 1
     </select>
 
+    <select id="queryByDomainIdAndSysToken" resultMap="BaseResultMap">
+        <include refid="select_sql"/> from sys_user
+        where domain_id=#{domainId} and sys_token=#{sysToken} and del_flag = 1
+    </select>
+
     <update id="updateLoginIp">
         update sys_user set login_ip = #{loginIp} where id = #{id}
     </update>
@@ -267,6 +282,10 @@
 
     <update id="removeToken">
         update sys_user set token = null where id = #{id}
+    </update>
+
+    <update id="removeSysToken">
+        update sys_user set sys_token = null where id = #{id}
     </update>
 
     <select id="queryUserInfo" resultType="com.shuangying.core.db.model.dto.UserInfoDto">

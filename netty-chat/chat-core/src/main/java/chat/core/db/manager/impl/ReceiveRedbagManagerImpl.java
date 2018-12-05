@@ -11,6 +11,7 @@ import chat.core.db.mapper.UserMapper;
 import chat.core.db.model.DomainConfig;
 import chat.core.db.model.ReceiveRedbag;
 import chat.core.db.model.Redbag;
+import chat.core.db.model.User;
 import chat.core.db.model.query.ReceiveRedBagQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,19 +100,25 @@ public class ReceiveRedbagManagerImpl implements ReceiveRedbagManager {
                 return null;
             }
             Redbag redbag = redbagMapper.queryByIdForLock(redBagId);
-            if (redbag == null || domainConfig.getId() != redbag.getDomainId()){
+            if (redbag == null || !domainConfig.getId().equals(redbag.getDomainId())){
                 return null;
             }
             BigDecimal value = RedBagUtility.receiveRedBag(domain,redBagId);
             if (value==null){
                 return null;
             }
+            User user = userMapper.queryById(userId);
+            if (user == null){
+                return null;
+            }
             ReceiveRedbag insert = new ReceiveRedbag();
             insert.setDomainId(domainConfig.getId());
             insert.setRedbagId(redBagId);
-            insert.setReceiveUserId(userId);
+            insert.setReceiveUserId(user.getId());
+            insert.setReceiveUserName(user.getUserName());
+            insert.setSendUserId(redbag.getSendUserId());
             insert.setSendUserName(redbag.getSendUserName());
-            insert.setReceiveUserName(null);
+            insert.setSendUserIcon(redbag.getSendUserIcon());
             insert.setAmount(value);
             insert.setStatus(1);
             receiveRedbagMapper.insert(insert);
@@ -128,6 +135,16 @@ public class ReceiveRedbagManagerImpl implements ReceiveRedbagManager {
             return receiveRedbagMapper.queryById(id);
         } catch (Exception e) {
             logger.error("领取红包queryById异常",e);
+            throw new ManagerException(e);
+        }
+    }
+
+    @Override
+    public ReceiveRedbag queryByIdAndDomainId(Long id, Long domainId) {
+        try {
+            return receiveRedbagMapper.queryByIdAndDomainId(id,domainId);
+        } catch (Exception e) {
+            logger.error("领取红包queryByIdAndDomainId异常",e);
             throw new ManagerException(e);
         }
     }

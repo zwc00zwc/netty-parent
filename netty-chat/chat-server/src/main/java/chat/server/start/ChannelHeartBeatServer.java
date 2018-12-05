@@ -41,9 +41,10 @@ public class ChannelHeartBeatServer {
                     @Override
                     public void run() {
                     Map<String, RoomChannelMap> domainMap = DomainChannelMap.instance();
-                    if (domainMap != null && domainMap.size()>0){
-                        for (String key:domainMap.keySet()) {
-                            threadPoolTaskExecutor.execute(new ChannelProcessThread(key,domainMap.get(key)));
+                    if (domainMap != null && domainMap.size()>0) {
+                        for (String key : domainMap.keySet()) {
+                            logger.info("【" + key + "】开始清理channel");
+                            threadPoolTaskExecutor.execute(new ChannelProcessThread(key, domainMap.get(key)));
                         }
                     }
                     }
@@ -82,6 +83,7 @@ public class ChannelHeartBeatServer {
                                     roomChannelMap.removeRoomAllContext(key);
                                 }
                             } catch (Exception e) {
+                                logger.error("清理【"+key+"】房间channel异常",e);
                             }
                         }
                     }

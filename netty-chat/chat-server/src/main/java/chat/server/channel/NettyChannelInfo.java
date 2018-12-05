@@ -54,4 +54,15 @@ public class NettyChannelInfo {
     public void setContextKey(String contextKey) {
         this.contextKey = contextKey;
     }
+
+    @Override
+    public String toString() {
+        return "NettyChannelInfo{" +
+                "userId='" + userId + '\'' +
+                ", domain='" + domain + '\'' +
+                ", roomId='" + roomId + '\'' +
+                ", zoneKey='" + zoneKey + '\'' +
+                ", contextKey='" + contextKey + '\'' +
+                '}';
+    }
 }

@@ -2,17 +2,15 @@ package chat.server.channel;
 
 import chat.server.command.ServerCommandEnum;
 import com.alibaba.fastjson.JSONObject;
-import com.shuangying.core.common.utility.DateUtils;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2018/11/5 15:15
  */
 public class ChannelContextMap {
+    private static final Logger logger = LoggerFactory.getLogger(ChannelContextMap.class);
     private Map<String,ChannelContext> contextMap;
 
     private AttributeKey<NettyChannelInfo> infoKey = AttributeKey.valueOf("channelInfo");
@@ -110,17 +109,26 @@ public class ChannelContextMap {
     public void removeUserIdChannelContext(Long userId){
         if (contextMap!=null && contextMap.size()>0){
             Iterator<Map.Entry<String, ChannelContext>> it = contextMap.entrySet().iterator();
+            ChannelContext context = null;
             while (it.hasNext()){
                 try {
                     Map.Entry<String, ChannelContext> entry= it.next();
-                    if (entry.getValue()!=null && userId == entry.getValue().getUserId()){
-                        if (entry.getValue().getChannel()!=null){
+                    context = entry.getValue();
+                    if (context!=null && userId.equals(context.getUserId())){
+                        if (context.getChannel()!=null){
+                            if (context.getChannel().isActive()){
+                                JSONObject response = new JSONObject();
+                                response.put("messageId", UUID.randomUUID().toString().replace("-", ""));
+                                response.put("command", ServerCommandEnum.S_LOGIN_ANOTHER.getKey());
+                                context.getChannel().writeAndFlush(new TextWebSocketFrame(response.toJSONString()));
+                            }
                             entry.getValue().getChannel().close();
                         }
                         it.remove();
+                        break;
                     }
                 } catch (Exception e) {
-
+                    logger.error("removeUserIdChannelContext异常",e);
                 }
             }
         }
@@ -130,23 +138,24 @@ public class ChannelContextMap {
      * 获取并移除用户channel上下文
      * @param userId
      */
-    public List<ChannelContext> getAndRemoveUserIdChannelContext(Long userId){
-        List<ChannelContext> list = new ArrayList<>();
+    public ChannelContext getAndRemoveUserIdChannelContext(Long userId){
+        ChannelContext context = null;
         if (contextMap!=null && contextMap.size()>0){
             Iterator<Map.Entry<String, ChannelContext>> it = contextMap.entrySet().iterator();
             while (it.hasNext()){
                 try {
                     Map.Entry<String, ChannelContext> entry= it.next();
-                    if (entry.getValue()!=null && userId == entry.getValue().getUserId()){
-                        list.add(entry.getValue());
+                    if (entry.getValue()!=null && userId.equals(entry.getValue().getUserId())){
+                        context = entry.getValue();
                         it.remove();
+                        return context;
                     }
                 } catch (Exception e) {
-
+                    logger.error("getAndRemoveUserIdChannelContext异常",e);
                 }
             }
         }
-        return list;
+        return context;
     }
 
     /**
@@ -160,20 +169,22 @@ public class ChannelContextMap {
             while (it.hasNext()){
                 try {
                     Map.Entry<String, ChannelContext> entry= it.next();
-                    if (entry.getValue()!=null && ip.equals(channelContext.getIp()) && StringUtils.isEmpty(channelContext.getToken())){
-                        if (entry.getValue().getChannel()!=null){
-                            if (entry.getValue().getChannel().isActive()){
+                    channelContext = entry.getValue();
+                    if (channelContext!=null && ip.equals(channelContext.getIp()) && StringUtils.isEmpty(channelContext.getToken())){
+                        if (channelContext.getChannel()!=null){
+                            if (channelContext.getChannel().isActive()){
                                 JSONObject response = new JSONObject();
                                 response.put("messageId", UUID.randomUUID().toString().replace("-", ""));
                                 response.put("command", ServerCommandEnum.S_IP_ERROR.getKey());
-                                response.put("messageTime", DateUtils.getStrFromDate(new Date(), "HH:mm:ss"));
-                                entry.getValue().getChannel().writeAndFlush(new TextWebSocketFrame(response.toJSONString()));
+                                channelContext.getChannel().writeAndFlush(new TextWebSocketFrame(response.toJSONString()));
                             }
-                            entry.getValue().getChannel().close();
+                            channelContext.getChannel().close();
                         }
                         it.remove();
+                        break;
                     }
                 } catch (Exception e) {
+                    logger.error("清除channel异常",e);
                 }
             }
         }
@@ -193,7 +204,7 @@ public class ChannelContextMap {
                     }
                     it.remove();
                 } catch (Exception e) {
-
+                    logger.error("removeAllChannelContext异常",e);
                 }
             }
         }
@@ -215,7 +226,7 @@ public class ChannelContextMap {
                         it.remove();
                     }
                 } catch (Exception e) {
-
+                    logger.error("cleanChannelContext异常",e);
                 }
             }
         }
@@ -258,6 +269,7 @@ public class ChannelContextMap {
                         channelContext.getChannel().writeAndFlush(new TextWebSocketFrame(msg));
                     }
                 } catch (Exception e) {
+                    logger.error("sendAll 异常",e);
                 }
             }
         }

@@ -18,6 +18,8 @@ import com.shuangying.core.db.model.Redbag;
 import com.shuangying.core.db.model.Room;
 import com.shuangying.core.db.model.User;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +37,7 @@ import java.util.UUID;
 @Controller
 @RequestMapping(value = "/api")
 public class ApiController {
+    private Logger logger = LoggerFactory.getLogger(ApiController.class);
     @Autowired
     private UserManager userManager;
 
@@ -52,7 +55,7 @@ public class ApiController {
 
     @ResponseBody
     @RequestMapping(value = "/removeRoom")
-    public ResultDo removeRoom(String domain,String token,Long roomId){
+    public ResultDo removeRoom(String domain, String token, Long roomId){
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig(domain);
         if (domainConfig==null){
@@ -64,8 +67,8 @@ public class ApiController {
             resultDo.setErrorDesc("用户信息错误");
             return resultDo;
         }
-        Room room = roomManager.queryById(roomId);
-        if (room==null || domainConfig.getId() != room.getDomainId()){
+        Room room = roomManager.queryByIdAndDomainId(roomId,domainConfig.getId());
+        if (room==null){
             resultDo.setErrorDesc("房间不存在");
             return resultDo;
         }
@@ -79,7 +82,7 @@ public class ApiController {
 
     @ResponseBody
     @RequestMapping(value = "/forbid")
-    public ResultDo forbid(String domain,String token,Long roomId){
+    public ResultDo forbid(String domain, String token, Long roomId){
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig(domain);
         if (domainConfig==null){
@@ -91,8 +94,8 @@ public class ApiController {
             resultDo.setErrorDesc("用户信息错误");
             return resultDo;
         }
-        Room room = roomManager.queryById(roomId);
-        if (room==null || domainConfig.getId() != room.getDomainId()){
+        Room room = roomManager.queryByIdAndDomainId(roomId,domainConfig.getId());
+        if (room==null){
             resultDo.setErrorDesc("房间不存在");
             return resultDo;
         }
@@ -110,7 +113,7 @@ public class ApiController {
 
     @ResponseBody
     @RequestMapping(value = "/unForbid")
-    public ResultDo unForbid(String domain,String token,Long roomId){
+    public ResultDo unForbid(String domain, String token, Long roomId){
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig(domain);
         if (domainConfig==null){
@@ -122,8 +125,8 @@ public class ApiController {
             resultDo.setErrorDesc("用户信息错误");
             return resultDo;
         }
-        Room room = roomManager.queryById(roomId);
-        if (room==null || domainConfig.getId() != room.getDomainId()){
+        Room room = roomManager.queryByIdAndDomainId(roomId,domainConfig.getId());
+        if (room==null){
             resultDo.setErrorDesc("房间不存在");
             return resultDo;
         }
@@ -141,7 +144,7 @@ public class ApiController {
 
     @ResponseBody
     @RequestMapping(value = "/removeUser")
-    public ResultDo removeUser(String domain,String token,Long userId){
+    public ResultDo removeUser(String domain, String token, Long userId){
         ResultDo resultDo = new ResultDo();
         DomainConfig domainConfig = getDomainConfig(domain);
         if (domainConfig == null) {
@@ -178,42 +181,51 @@ public class ApiController {
 
     @ResponseBody
     @RequestMapping(value = "/sendRedbag")
-    public ResultDo sendRedbag(String domain,String token,Redbag redbag) {
+    public ResultDo sendRedbag(String domain, String token, Redbag redbag) {
         ResultDo resultDo = new ResultDo();
-        DomainConfig domainConfig = getDomainConfig(domain);
-        if (domainConfig == null) {
-            resultDo.setErrorDesc(AppConfig.DomainError);
-            return resultDo;
-        }
-        User user = userManager.queryByDomainIdAndToken(domainConfig.getId(), token);
-        if (user == null) {
-            resultDo.setErrorDesc("用户信息错误");
-            return resultDo;
-        }
+        try {
+            DomainConfig domainConfig = getDomainConfig(domain);
+            if (domainConfig == null) {
+                resultDo.setErrorDesc(AppConfig.DomainError);
+                return resultDo;
+            }
+            User user = userManager.queryByDomainIdAndToken(domainConfig.getId(), token);
+            if (user == null) {
+                resultDo.setErrorDesc("用户信息错误");
+                return resultDo;
+            }
 
-        Redbag insert = new Redbag();
-        insert.setDomainId(domainConfig.getId());
-        insert.setSendUserId(user.getId());
-        insert.setSendUserName(user.getUserName());
-        insert.setRoomId(redbag.getRoomId());
-        insert.setAmount(redbag.getAmount());
-        insert.setCount(redbag.getCount());
-        insert.setRemark(redbag.getRemark());
-        Redbag result = redbagManager.createRedbag(domainConfig.getDomainName(), insert);
-        if (result!=null) {
-            JSONObject response = new JSONObject();
-            response.put("messageId", UUID.randomUUID().toString().replace("-", ""));
-            response.put("command", ServerCommandEnum.S_SEND_REDBAG.getKey());
-            response.put("userId", insert.getSendUserId());
-            response.put("userName", insert.getSendUserName());
-            response.put("userIcon", user.getIcon());
-            response.put("messageTime", DateUtils.getStrFromDate(new Date(),"HH:mm:ss"));
-            JSONObject content = new JSONObject();
-            content.put("redbagId",result.getId());
-            response.put("content",content);
-            messageProcess.sendRoomMsg(domain,redbag.getRoomId() + "",response.toJSONString());
-            HistoryMessageHandler.insert(domain, redbag.getRoomId() + "", response.toJSONString());
-            resultDo.setSuccess(true);
+            Redbag insert = new Redbag();
+            insert.setDomainId(domainConfig.getId());
+            insert.setSendUserId(user.getId());
+            insert.setSendUserName(user.getUserName());
+            insert.setSendUserIcon(user.getIcon());
+            insert.setRoomId(redbag.getRoomId());
+            insert.setAmount(redbag.getAmount());
+            insert.setCount(redbag.getCount());
+            insert.setRemark(redbag.getRemark());
+            Redbag result = redbagManager.createRedbag(domainConfig.getDomainName(), insert);
+            if (result!=null) {
+                JSONObject response = new JSONObject();
+                response.put("messageId", UUID.randomUUID().toString().replace("-", ""));
+                response.put("command", ServerCommandEnum.S_SEND_REDBAG.getKey());
+                response.put("userId", insert.getSendUserId());
+                response.put("userName", insert.getSendUserName());
+                response.put("userIcon", user.getIcon());
+                response.put("messageTime", DateUtils.getStrFromDate(new Date(),"HH:mm:ss"));
+                JSONObject content = new JSONObject();
+                content.put("redbagId",result.getId());
+                response.put("content",content);
+                messageProcess.sendRoomMsg(domain,redbag.getRoomId() + "",response.toJSONString());
+                HistoryMessageHandler.insert(domain, redbag.getRoomId() + "", response.toJSONString());
+                resultDo.setSuccess(true);
+                return resultDo;
+            }else {
+                resultDo.setErrorDesc("红包创建为空");
+            }
+        } catch (Exception e) {
+            logger.error("生成红包异常",e);
+            resultDo.setErrorDesc("生成红包异常");
             return resultDo;
         }
         return resultDo;
@@ -244,7 +256,7 @@ public class ApiController {
 
     @ResponseBody
     @RequestMapping(value = "sendMsg")
-    public ResultDo sendMsg(String domain,String roomId,String msg){
+    public ResultDo sendMsg(String domain, String roomId, String msg){
         ResultDo resultDo = new ResultDo();
         messageProcess.sendRoomMsg(domain,roomId,msg);
         resultDo.setSuccess(true);

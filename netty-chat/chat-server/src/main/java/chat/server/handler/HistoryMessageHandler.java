@@ -19,7 +19,7 @@ public class HistoryMessageHandler {
     public static void insert(String domain, String roomId, String msg) {
         try {
             String key = domain + "_" + roomId + "_HISORYMESSAGE";
-            RedisManager.lpush(key.hashCode() + "", msg, 24 * 60 * 60);
+            RedisManager.lpush(key.hashCode() + "", msg);
             RedisManager.ltrim(key.hashCode() + "");
         } catch (Exception e) {
             logger.error("查询历史消息异常",e);

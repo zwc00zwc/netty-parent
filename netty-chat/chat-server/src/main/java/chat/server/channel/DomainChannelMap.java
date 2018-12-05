@@ -2,6 +2,8 @@ package chat.server.channel;
 
 import com.shuangying.core.common.utility.CommonPropertiesUtility;
 import io.netty.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -12,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2018/11/5 15:10
  */
 public class DomainChannelMap {
+    private static final Logger logger = LoggerFactory.getLogger(DomainChannelMap.class);
     private static final Object _lock = new Object();
 
     private static final Object _lockOperate = new Object();
@@ -50,8 +53,8 @@ public class DomainChannelMap {
                 if (instance().containsKey(domain)) {
                     roomChannelMap = instance().get(domain);
                 } else {
-                    int zoneCount = Integer.parseInt(CommonPropertiesUtility.getProperty("channelMap.zoneCount"));
-                    roomChannelMap = new RoomChannelMap(zoneCount);
+                    int figure = Integer.parseInt(CommonPropertiesUtility.getProperty("channelMap.figure"));
+                    roomChannelMap = new RoomChannelMap(figure);
                     instance().put(domain, roomChannelMap);
                 }
             }
@@ -134,6 +137,18 @@ public class DomainChannelMap {
     }
 
     /**
+     * 移除游客ip channel
+     * @param domain
+     * @param ip
+     */
+    public static void removeIpChannelContext(String domain,String ip){
+        RoomChannelMap roomChannelMap = DomainChannelMap.getDomainContextMap(domain);
+        if (roomChannelMap!=null){
+            roomChannelMap.removeIpChannelContext(ip);
+        }
+    }
+
+    /**
      * 清理Channel上下文
      * @param domain
      */
@@ -154,7 +169,7 @@ public class DomainChannelMap {
      * @param token
      * @return
      */
-    public static boolean checkSender(String domain,String roomId,String token){
+    public static boolean checkSender(String domain,String roomId,String userId,String token){
         RoomChannelMap roomChannelMap = null;
         if (instance().containsKey(domain)){
             roomChannelMap = instance().get(domain);
@@ -162,7 +177,7 @@ public class DomainChannelMap {
         if (roomChannelMap == null){
             return false;
         }
-        return roomChannelMap.checkSender(roomId,token);
+        return roomChannelMap.checkSender(roomId,userId,token);
     }
 
     /**
@@ -180,6 +195,17 @@ public class DomainChannelMap {
             return null;
         }
         return roomChannelMap.getAndRemoveUserAllChannelContext(userId);
+    }
+
+    public static ChannelContext getAndRemoveRoomUserChannelContext(String domain,String roomId, Long userId){
+        RoomChannelMap roomChannelMap = null;
+        if (instance().containsKey(domain)){
+            roomChannelMap = instance().get(domain);
+        }
+        if (roomChannelMap == null){
+            return null;
+        }
+        return roomChannelMap.getAndRemoveRoomUserChannelContext(roomId,userId);
     }
 
     /**
@@ -265,6 +291,7 @@ public class DomainChannelMap {
                         count += roomChannelMap.monitorOnlineCount();
                     }
                 } catch (Exception e) {
+                    logger.error("monitorOnlineCount异常",e);
                 }
             }
         }

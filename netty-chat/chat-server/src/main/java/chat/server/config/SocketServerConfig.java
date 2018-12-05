@@ -1,5 +1,6 @@
 package chat.server.config;
 
+import chat.server.start.ChannelHeartBeatServer;
 import chat.server.start.ChatWebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,5 +18,10 @@ public class SocketServerConfig {
     @Bean(name = "chatWebSocketServer", initMethod = "init", destroyMethod = "shutdown")
     public ChatWebSocketServer chatWebSocketServer() {
         return new ChatWebSocketServer();
+    }
+
+    @Bean(name = "channelHeartBeatServer", initMethod = "init")
+    public ChannelHeartBeatServer channelHeartBeatServer(){
+        return new ChannelHeartBeatServer();
     }
 }

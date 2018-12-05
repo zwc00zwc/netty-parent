@@ -1,5 +1,6 @@
 package chat.server.handler;
 
+import chat.server.channel.ChannelContext;
 import chat.server.channel.ChannelContextMap;
 import chat.server.channel.DomainChannelMap;
 import chat.server.command.ClientCommandEnum;
@@ -7,10 +8,12 @@ import chat.server.command.ServerCommandEnum;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.shuangying.core.common.utility.DateUtils;
+import com.shuangying.core.db.manager.DomainConfigManager;
 import com.shuangying.core.db.manager.ReceiveRedbagManager;
 import com.shuangying.core.db.manager.RoleManager;
 import com.shuangying.core.db.manager.RoomManager;
 import com.shuangying.core.db.manager.UserManager;
+import com.shuangying.core.db.model.DomainConfig;
 import com.shuangying.core.db.model.ReceiveRedbag;
 import com.shuangying.core.db.model.Room;
 import com.shuangying.core.db.model.User;
@@ -49,6 +52,9 @@ public class MessageProcess {
     private RoleManager roleManager;
 
     @Autowired
+    private DomainConfigManager domainConfigManager;
+
+    @Autowired
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     public void execute(Channel channel, String message) {
@@ -63,53 +69,85 @@ public class MessageProcess {
         String roleName = jsonObject.getString("roleName");
         String content = jsonObject.getString("content");
 
-        //校验sender信息
-        if (!DomainChannelMap.checkSender(domain, roomId, token)) {
-            return;
-        }
         //组装response基本信息
         JSONObject response = createResponse(userId, userName, userIcon, roleName);
         ClientCommandEnum commandEnum = ClientCommandEnum.getEnumBykey(command);
         switch (commandEnum) {
             //发送消息
             case C_MESSAGE:
-                sendMessage(userId, domain, roomId, response, content);
+                try {
+                    //检测发送者信息
+                    if (!checkSender(domain,roomId,userId,token)){
+                        return;
+                    }
+                    sendMessage(userId, domain, roomId, response, content);
+                } catch (Exception e) {
+                    logger.error("处理发送消息异常", e);
+                }
                 break;
             //踢出聊天室
             case C_REMOVE_CHAT:
-                removeChat(userId, domain, roomId, response, content);
+                try {
+                    //检测发送者信息
+                    if (!checkSender(domain,roomId,userId,token)){
+                        return;
+                    }
+                    removeChat(channel,userId, domain, roomId, content);
+                } catch (Exception e) {
+                    logger.error("踢出用户异常", e);
+                }
                 break;
-            //禁言
-//            case C_FORBID_CHAT:
-//                commandResponse(domain, roomId, response,ServerCommandEnum.S_FORBID_CHAT);
-//                break;
-            //取消禁言
-//            case C_UNFORBID_CHAT:
-//                commandResponse(domain, roomId, response,ServerCommandEnum.S_UNFORBID_CHAT);
-//                break;
             //撤回消息
             case C_RECALL_MESSAGE:
-                recallMessage(userId, domain, roomId, response, content);
+                try {
+                    //检测发送者信息
+                    if (!checkSender(domain,roomId,userId,token)){
+                        return;
+                    }
+                    recallMessage(channel,userId, domain, roomId, response, content);
+                } catch (Exception e) {
+                    logger.error("撤回消息异常", e);
+                }
                 break;
             //心跳检测
             case C_HEART_BEAT:
-                commandSingleResponse(channel, domain, roomId, response, ServerCommandEnum.S_HEART_BEAT);
+                try {
+                    commandSingleResponse(channel, domain, roomId, response, ServerCommandEnum.S_HEART_BEAT);
+                } catch (Exception e) {
+                    logger.error("心跳发送异常", e);
+                }
                 break;
-            //发送红包
-//            case C_SEND_REDBAG:
-//                System.out.print("aaa");
-//                break;
             //领取红包
             case C_RECEIVE_REDBAG:
-                receiveRedBag(domain, roomId, userId, response, content, channel);
-                break;
-            //红包领取记录
-            case C_REDBAG_RECEIVE_RECORD:
-                System.out.print("aaa");
+                try {
+                    //检测发送者信息
+                    if (!checkSender(domain,roomId,userId,token)){
+                        return;
+                    }
+                    receiveRedBag(domain, roomId, userId, response, content, channel);
+                } catch (Exception e) {
+                    logger.error("领取红包异常");
+                }
                 break;
             default:
-                break;
+                logger.info("【" + command + "】无效");
         }
+    }
+
+    /**
+     * 检测发送者信息
+     * @param domain
+     * @param roomId
+     * @param userId
+     * @param token
+     * @return
+     */
+    private boolean checkSender(String domain,String roomId,String userId,String token){
+        if (StringUtils.isEmpty(token)||StringUtils.isEmpty(userId)||StringUtils.isEmpty(roomId)) {
+            return false;
+        }
+        //校验sender信息
+        return DomainChannelMap.checkSender(domain, roomId,userId, token);
     }
 
     public void connectError(Channel channel, ServerCommandEnum serverCommandEnum) {
@@ -181,24 +219,52 @@ public class MessageProcess {
      *
      * @param domain
      * @param roomId
-     * @param response
      * @param contentStr
      */
-    public void removeChat(String userId, String domain, String roomId, JSONObject response, String contentStr) {
+    public void removeChat(Channel channel,String userId, String domain, String roomId, String contentStr) {
         JSONObject content = JSON.parseObject(contentStr);
-        String removeId = content.getString("removeId");
-        User user = userManager.queryById(Long.parseLong(userId));
+        String removeIdstr = content.getString("removeId");
+
+        DomainConfig domainConfig = domainConfigManager.queryByDomainNameCache(domain);
+        if (domainConfig==null){
+            logger.error("踢出用户服务为空");
+            return;
+        }
+
+        User user = userManager.queryByDomainIdAndId(Long.parseLong(userId),domainConfig.getId());
         if (user == null) {
+            logger.error("踢出操作用户为空");
             return;
         }
+
         if (!roleManager.queryRolePermAndAuthority(user.getRoleId(), "chat:remove")) {
+            if (channel.isActive()){
+                JSONObject response = new JSONObject();
+                response.put("messageId", UUID.randomUUID().toString().replace("-", ""));
+                response.put("command", ServerCommandEnum.S_AUTH_ERROR.getKey());
+                channel.writeAndFlush(new TextWebSocketFrame(response.toJSONString()));
+            }
             return;
         }
-        response.put("command", ServerCommandEnum.S_REMOVE_CHAT.getKey());
-        JSONObject contentResponse = new JSONObject();
-        contentResponse.put("removeId", removeId);
-        response.put("content", contentResponse);
-        sendRoomMsg(domain, roomId, response.toJSONString());
+        Long removeId = Long.parseLong(removeIdstr);
+        User removeUser = userManager.queryByDomainIdAndId(removeId,domainConfig.getId());
+        if (removeUser!=null){
+            if (userManager.remove(removeUser.getId())){
+                ChannelContext context = DomainChannelMap.getAndRemoveRoomUserChannelContext(domain,roomId,removeId);
+                if (context != null && context.getChannel()!=null){
+                    if (context.getChannel().isActive()){
+                        JSONObject response = new JSONObject();
+                        response.put("messageId", UUID.randomUUID().toString().replace("-", ""));
+                        response.put("command", ServerCommandEnum.S_REMOVE_CHAT.getKey());
+                        JSONObject contentResponse = new JSONObject();
+                        contentResponse.put("removeId", removeId);
+                        response.put("content", contentResponse);
+                        context.getChannel().writeAndFlush(new TextWebSocketFrame(response.toJSONString()));
+                    }
+                    context.getChannel().close();
+                }
+            }
+        }
     }
 
     /**
@@ -209,17 +275,24 @@ public class MessageProcess {
      * @param response
      * @param contentStr
      */
-    public void recallMessage(String userId, String domain, String roomId, JSONObject response, String contentStr) {
+    public void recallMessage(Channel channel, String userId, String domain, String roomId, JSONObject response, String contentStr) {
         User user = userManager.queryById(Long.parseLong(userId));
         if (user == null) {
             return;
         }
         if (!roleManager.queryRolePermAndAuthority(user.getRoleId(), "chat:recall")) {
+            if (channel.isActive()){
+                response = new JSONObject();
+                response.put("messageId", UUID.randomUUID().toString().replace("-", ""));
+                response.put("command", ServerCommandEnum.S_AUTH_ERROR.getKey());
+                channel.writeAndFlush(new TextWebSocketFrame(response.toJSONString()));
+            }
             return;
         }
         JSONObject content = JSON.parseObject(contentStr);
         String messageId = content.getString("messageId");
         if (StringUtils.isEmpty(messageId)) {
+            logger.error("撤回消息id为空");
             return;
         }
         HistoryMessageHandler.remove(domain, roomId, messageId);
@@ -254,6 +327,7 @@ public class MessageProcess {
             contentResponse.put("redbagId", redbagId);
             contentResponse.put("amount", receiveRedbag.getAmount());
             contentResponse.put("sendName", receiveRedbag.getSendUserName());
+            contentResponse.put("sendIcon", receiveRedbag.getSendUserIcon());
             response.put("content", contentResponse);
             channel.writeAndFlush(new TextWebSocketFrame(response.toJSONString()));
             return;
@@ -262,16 +336,21 @@ public class MessageProcess {
             receiveRedbag = receiveRedbagManager.receiveRedbag(domain, Long.parseLong(redbagId), Long.parseLong(userId));
         } catch (Exception e) {
             logger.error("领取红包异常");
+            response.put("command", ServerCommandEnum.S_RECEIVE_REDBAG_ERROR.getKey());
+            channel.writeAndFlush(new TextWebSocketFrame(response.toJSONString()));
+            return;
         }
         if (receiveRedbag == null) {
             response.put("command", ServerCommandEnum.S_REDBAG_OUT.getKey());
             channel.writeAndFlush(new TextWebSocketFrame(response.toJSONString()));
+            return;
         }
         response.put("command", ServerCommandEnum.S_RECEIVE_REDBAG.getKey());
         JSONObject contentResponse = new JSONObject();
         contentResponse.put("redbagId", redbagId);
         contentResponse.put("amount", receiveRedbag.getAmount());
         contentResponse.put("sendName", receiveRedbag.getSendUserName());
+        contentResponse.put("sendIcon", receiveRedbag.getSendUserIcon());
         response.put("content", contentResponse);
         sendRoomMsg(domain, roomId, response.toJSONString());
         return;
@@ -305,14 +384,20 @@ public class MessageProcess {
      * @param response
      */
     public void sendRoomMsg(String domain, String roomId, String response) {
-        Map<String, ChannelContextMap> channelMap = DomainChannelMap.sendRoomMsg(domain, roomId);
-        if (channelMap != null && channelMap.size() > 0) {
-            for (String key : channelMap.keySet()) {
-                try {
-                    threadPoolTaskExecutor.execute(new SendMsgThread(channelMap.get(key), response));
-                } catch (Exception e) {
+        threadPoolTaskExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                Map<String, ChannelContextMap> channelMap = DomainChannelMap.sendRoomMsg(domain, roomId);
+                if (channelMap != null && channelMap.size() > 0) {
+                    for (String key : channelMap.keySet()) {
+                        try {
+                            threadPoolTaskExecutor.execute(new SendMsgThread(channelMap.get(key), response));
+                        } catch (Exception e) {
+                            logger.error("线程发送消息处理异常",e);
+                        }
+                    }
                 }
             }
-        }
+        });
     }
 }

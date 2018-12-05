@@ -1,17 +1,18 @@
 package chat.server.handler;
 
 import chat.server.channel.ChannelContext;
-import chat.server.channel.ChannelContextMap;
 import chat.server.channel.DomainChannelMap;
 import chat.server.channel.NettyChannelInfo;
 import chat.server.command.ServerCommandEnum;
 import com.alibaba.fastjson.JSONObject;
 import com.shuangying.core.db.manager.BlackIpManager;
 import com.shuangying.core.db.manager.DomainConfigManager;
+import com.shuangying.core.db.manager.RoleManager;
 import com.shuangying.core.db.manager.RoomManager;
 import com.shuangying.core.db.manager.UserManager;
 import com.shuangying.core.db.model.BlackIp;
 import com.shuangying.core.db.model.DomainConfig;
+import com.shuangying.core.db.model.Role;
 import com.shuangying.core.db.model.Room;
 import com.shuangying.core.db.model.User;
 import io.netty.channel.Channel;
@@ -64,6 +65,9 @@ public class ChannelContextHandler extends SimpleChannelInboundHandler<Object> {
 
     @Autowired
     private RoomManager roomManager;
+
+    @Autowired
+    private RoleManager roleManager;
 
     @Autowired
     private MessageProcess messageProcess;
@@ -153,6 +157,8 @@ public class ChannelContextHandler extends SimpleChannelInboundHandler<Object> {
             }
             String userId = null;
             String userName = null;
+            String userIcon = null;
+            String roleIcon = null;
             //已登录
             if (!StringUtils.isEmpty(token)){
                 User user = userManager.queryByDomainIdAndToken(domainConfig.getId(),token);
@@ -166,26 +172,23 @@ public class ChannelContextHandler extends SimpleChannelInboundHandler<Object> {
                 } catch (Exception e) {
                     logger.error("更新登录ip异常");
                 }
+                Role role = null;
+                try {
+                    role = roleManager.queryById(user.getRoleId());
+                } catch (Exception e) {
+                    logger.error("查询角色头像异常",e);
+                }
+                if (role!=null){
+                    roleIcon = role.getRoleIcon();
+                }
                 userId = user.getId()+"";
                 userName = user.getUserName();
+                userIcon = user.getIcon();
                 DomainChannelMap.removeDomainUserContext(domain,user.getId());
                 DomainChannelMap.addChannelContext(domain,roomId,user.getToken(),user.getId(),ip,ctx.channel());
             }else {
                 //游客
-                Map<String, ChannelContextMap> channelMap = DomainChannelMap.getDomainRoomContextMap(domain, roomId);
-                ChannelContextMap contextMap = null;
-                if (channelMap != null && channelMap.size() > 0) {
-                    for (String key : channelMap.keySet()) {
-                        try {
-                            contextMap = channelMap.get(key);
-                            if (contextMap != null) {
-                                contextMap.removeIpChannelContext(ip);
-                            }
-                        } catch (Exception e) {
-                        }
-                    }
-                }
-                userId = UUID.randomUUID().toString().replace("-", "");
+                DomainChannelMap.removeIpChannelContext(domain,ip);
                 userName = randomName();
                 DomainChannelMap.addChannelContext(domain, roomId, null, null, ip, ctx.channel());
             }
@@ -193,6 +196,8 @@ public class ChannelContextHandler extends SimpleChannelInboundHandler<Object> {
             response.put("messageId", UUID.randomUUID().toString().replace("-", ""));
             response.put("userId", userId);
             response.put("userName", userName);
+            response.put("userIcon", userIcon);
+            response.put("roleIcon", roleIcon);
             response.put("command", ServerCommandEnum.S_JOIN_ROOM.getKey());
             messageProcess.sendRoomMsg(domain, roomId, response.toJSONString());
             JSONObject historyResponse = new JSONObject();

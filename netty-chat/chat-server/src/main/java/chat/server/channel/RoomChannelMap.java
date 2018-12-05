@@ -2,6 +2,8 @@ package chat.server.channel;
 
 import io.netty.channel.Channel;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,13 +18,14 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2018/11/5 15:11
  */
 public class RoomChannelMap {
+    private static final Logger logger = LoggerFactory.getLogger(RoomChannelMap.class);
     private Map<String, Map<String, ChannelContextMap>> roomMap;
 
-    private int zoneCount;
+    private int figure;
 
-    public RoomChannelMap(int _zoneCount) {
+    public RoomChannelMap(int _figure) {
         roomMap = new ConcurrentHashMap<>();
-        zoneCount = _zoneCount;
+        figure = _figure;
     }
 
     public Set<String> getRoomKeys(){
@@ -52,6 +55,10 @@ public class RoomChannelMap {
                 }
                 if (channelMap == null) {
                     channelMap = new HashMap<>();
+                    int zoneCount = 1;
+                    for (int i = 0; i < figure; i++) {
+                        zoneCount = zoneCount * 10;
+                    }
                     for (int i = 0; i < zoneCount; i++) {
                         channelMap.put("zone_" + i, new ChannelContextMap());
                     }
@@ -60,7 +67,7 @@ public class RoomChannelMap {
             }
         }
         if (channelMap != null) {
-            String zoneKey = randomZone(ip, token);
+            String zoneKey = randomZone(ip, userId == null ? null : userId + "");
             contextMap = channelMap.get(zoneKey);
             if (contextMap != null) {
                 contextMap.addChannelContext(domain, roomId, zoneKey, ip, userId, token, channel);
@@ -81,13 +88,23 @@ public class RoomChannelMap {
         return null;
     }
 
-    public boolean checkSender(String roomId, String token) {
+    public static void main(String[] args){
+        String a = 10001+"";
+        String hashcodestr = a.hashCode()+"";
+
+        System.out.print("长度："+hashcodestr.length());
+        String zone = hashcodestr.substring(hashcodestr.length() - 2);
+        System.out.print("zone:"+zone);
+        System.out.print("hashcode:"+a.hashCode());
+    }
+
+    public boolean checkSender(String roomId, String userId,String token) {
         Map<String, ChannelContextMap> channelMap = null;
         ChannelContextMap contextMap = null;
         if (roomMap.containsKey(roomId)) {
             channelMap = roomMap.get(roomId);
         }
-        String zoneKey = randomZone(null, token);
+        String zoneKey = randomZone(null, userId);
         if (channelMap != null) {
             if (channelMap.containsKey(zoneKey)) {
                 contextMap = channelMap.get(zoneKey);
@@ -108,30 +125,52 @@ public class RoomChannelMap {
     public List<ChannelContext> getAndRemoveUserAllChannelContext(Long userId) {
         List<ChannelContext> list = new ArrayList<>();
         Map<String, ChannelContextMap> channelMap = null;
+        String zoneKey = randomZone(null, userId == null ? null : userId + "");
         ChannelContextMap contextMap = null;
         if (roomMap != null && roomMap.size() > 0) {
             for (String key : roomMap.keySet()) {
                 try {
                     channelMap = roomMap.get(key);
                     if (channelMap != null && channelMap.size() > 0) {
-                        for (String contextKey : channelMap.keySet()) {
-                            try {
-                                contextMap = channelMap.get(contextKey);
-                                if (contextMap != null) {
-                                    List<ChannelContext> removeList = contextMap.getAndRemoveUserIdChannelContext(userId);
-                                    if (removeList != null) {
-                                        list.addAll(removeList);
-                                    }
+                        try {
+                            contextMap = channelMap.get(zoneKey);
+                            if (contextMap != null) {
+                                ChannelContext remove = contextMap.getAndRemoveUserIdChannelContext(userId);
+                                if (remove != null) {
+                                    list.add(remove);
                                 }
-                            } catch (Exception e) {
                             }
+                        } catch (Exception e) {
+                            logger.error("getAndRemoveUserAllChannelContext异常", e);
                         }
                     }
                 } catch (Exception e) {
+                    logger.error("getAndRemoveUserAllChannelContext异常", e);
                 }
             }
         }
         return list;
+    }
+
+    public ChannelContext getAndRemoveRoomUserChannelContext(String roomId, Long userId) {
+        Map<String, ChannelContextMap> channelMap = null;
+        String zoneKey = randomZone(null, userId == null ? null : userId + "");
+        ChannelContextMap contextMap = null;
+        if (roomMap != null && roomMap.size() > 0) {
+            if (roomMap.containsKey(roomId)) {
+                channelMap = roomMap.get(roomId);
+                if (channelMap != null && channelMap.size() > 0) {
+                    contextMap = channelMap.get(zoneKey);
+                    if (contextMap != null) {
+                        ChannelContext remove = contextMap.getAndRemoveUserIdChannelContext(userId);
+                        if (remove != null) {
+                            return remove;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -178,6 +217,7 @@ public class RoomChannelMap {
                     }
                 }
             } catch (Exception e) {
+                logger.error("removeRoomUserIdContext异常",e);
             }
         }
     }
@@ -207,6 +247,34 @@ public class RoomChannelMap {
                     }
                 }
             } catch (Exception e) {
+                logger.error("removeRoomIpContext异常",e);
+            }
+        }
+    }
+
+    /**
+     * 清除ip channel
+     * @param ip
+     */
+    public void removeIpChannelContext(String ip){
+        Map<String, ChannelContextMap> channelMap = null;
+        ChannelContextMap contextMap = null;
+        String zoneKey = randomZone(ip,null);
+        if (roomMap!=null && roomMap.size()>0){
+            for (String key : roomMap.keySet()){
+                try {
+                    channelMap = roomMap.get(key);
+                    if (channelMap != null) {
+                        if (channelMap.containsKey(zoneKey)) {
+                            contextMap = channelMap.get(zoneKey);
+                        }
+                        if (contextMap!=null){
+                            contextMap.removeIpChannelContext(ip);
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.error("removeIpChannelContext异常",e);
+                }
             }
         }
     }
@@ -230,6 +298,7 @@ public class RoomChannelMap {
                         contextMap.removeAllChannelContext();
                     }
                 } catch (Exception e) {
+                    logger.error("removeRoomAllContext异常",e);
                 }
             }
         }
@@ -253,7 +322,7 @@ public class RoomChannelMap {
                             }
                             it.remove();
                         } catch (Exception e) {
-
+                            logger.error("removeAllContext异常",e);
                         }
                     }
                 }
@@ -265,24 +334,22 @@ public class RoomChannelMap {
      * 移除所有channel上下文
      */
     public void removeUserAllContext(Long userId) {
+        String zone = randomZone(null, userId == null ? null : userId + "");
         if (roomMap != null && roomMap.size() > 0) {
             Map<String, ChannelContextMap> contextMap = null;
             for (String key : roomMap.keySet()) {
                 try {
                     contextMap = roomMap.get(key);
                     if (contextMap != null) {
-                        Iterator<Map.Entry<String, ChannelContextMap>> it = contextMap.entrySet().iterator();
-                        while (it.hasNext()) {
-                            try {
-                                Map.Entry<String, ChannelContextMap> entry = it.next();
-                                if (entry.getValue() != null) {
-                                    entry.getValue().removeUserIdChannelContext(userId);
-                                }
-                            } catch (Exception e) {
+                        if (contextMap.containsKey(zone)) {
+                            ChannelContextMap channelContextMap = contextMap.get(zone);
+                            if (channelContextMap != null) {
+                                channelContextMap.removeUserIdChannelContext(userId);
                             }
                         }
                     }
                 } catch (Exception e) {
+                    logger.error("removeUserAllContext异常", e);
                 }
             }
         }
@@ -306,10 +373,12 @@ public class RoomChannelMap {
                                     entry.getValue().cleanChannelContext();
                                 }
                             } catch (Exception e) {
+                                logger.error("cleanChannelContext异常",e);
                             }
                         }
                     }
                 } catch (Exception e) {
+                    logger.error("cleanChannelContext异常",e);
                 }
             }
         }
@@ -332,11 +401,13 @@ public class RoomChannelMap {
                                     onlineCount += contextMap.monitorOnline();
                                 }
                             } catch (Exception e) {
+                                logger.error("monitorOnline异常",e);
                             }
                         }
                     }
                     map.put(key, onlineCount);
                 } catch (Exception e) {
+                    logger.error("monitorOnline异常",e);
                 }
             }
         }
@@ -359,10 +430,12 @@ public class RoomChannelMap {
                                     onlineCount += contextMap.monitorOnline();
                                 }
                             } catch (Exception e) {
+                                logger.error("monitorOnlineCount异常",e);
                             }
                         }
                     }
                 } catch (Exception e) {
+                    logger.error("monitorOnlineCount异常",e);
                 }
             }
         }
@@ -412,15 +485,18 @@ public class RoomChannelMap {
      *
      * @return
      */
-    private String randomZone(String ip, String token) {
+    private String randomZone(String ip, String userId) {
         String key = null;
-        if (!StringUtils.isEmpty(token)) {
-            key = token;
+        if (!StringUtils.isEmpty(userId)) {
+            key = userId;
         } else {
             key = ip;
         }
 
-        int figure = zoneCount + "".length();
+        if (StringUtils.isEmpty(key)){
+            return "";
+        }
+
         String zone = null;
         int hashCode = key.hashCode();
         String hashCodeStr = hashCode + "";
@@ -431,6 +507,7 @@ public class RoomChannelMap {
                 zone = hashCodeStr.substring(hashCodeStr.length() - 1);
             }
         }
-        return "zone_" + zone;
+        int zoneint = Integer.parseInt(zone);
+        return "zone_" + zoneint;
     }
 }
